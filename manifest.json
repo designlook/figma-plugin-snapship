@@ -5,7 +5,9 @@
   "main": "code.js",
   "ui": "ui.html",
   "editorType": ["figma", "dev"],
+  "enablePrivatePluginApi": true,
   "networkAccess": {
-    "allowedDomains": ["none"]
+    "allowedDomains": ["https://api.github.com", "https://gitlab.com"],
+    "reasoning": "Create a pull/merge request containing the exported handoff spec on the user's GitHub or GitLab repository."
   }
 }

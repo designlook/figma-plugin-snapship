@@ -1,47 +1,43 @@
-# Relay — Handoff Intent (Figma plugin)
+# Relay — Figma change log → GitHub / GitLab
 
-Surfaces designer **intent** — interactions, states, and accessibility — that pixels can't
-convey. Designers author notes on elements in **Design mode**; developers read them in the
-**Dev Mode** inspect panel and export a clean Markdown spec.
+Log the changes you make in a Figma file, then commit them to your repo as a PR/MR.
+Zero build step — plain JS, runs straight from `manifest.json`.
 
-Working prototype. Zero build step — plain JS, runs straight from `manifest.json`.
+## What it does
 
-## What it does (MVP)
+- **Add a change** — select an element, optionally paste a **Jira link**, write a **description** of what
+  changed, and click **Add change**. The selected element's name is captured automatically and saved with
+  your description.
+- **Changes list** — everything you've logged for this file, stored on the file itself.
+- **Commit Changes** — pushes the list to GitHub or GitLab as `handoff/changes.md` (plus a **PNG** of each
+  element under `handoff/img/`) on a new branch and opens a **PR / MR**, with a deep **Figma link** back to
+  each element. The queue clears once it's committed. (The Figma link needs `figma.fileKey`, which is only
+  available to private/local plugins — hence `enablePrivatePluginApi` in the manifest.)
+- **Repo setup** — the first time, set a **repo URL** + **access token**. The URL is saved *with the Figma
+  file* (so it's remembered per file); the token is stored *locally on your machine*. Change it anytime
+  with the **Change** button.
 
-- Attach intent notes to any single element, typed **Interaction / States / Accessibility**.
-- Notes are stored on the node via `sharedPluginData`, so they travel with the file.
-- Mark a note **Ready** (vs Draft).
-- In **Dev Mode** the plugin is read-only — developers select an element and read the intent.
-- **Export Markdown** of every annotated element on the page (paste into a PR/Jira/Linear).
+## Test locally
 
-## Test it locally
+1. Figma desktop app → **Plugins → Development → Import plugin from manifest…** → pick `manifest.json`.
+2. Run **Relay**. First run: set your repo URL + token.
+3. Select an element, add a change (Jira link and/or description), then **Commit Changes**.
+4. Re-running after code edits: just re-run the plugin (Ctrl+Alt+P) — no re-import needed.
 
-1. Use the **Figma desktop app** (plugin development requires it).
-2. Menu → **Plugins → Development → Import plugin from manifest…**
-3. Select `manifest.json` in this folder.
-4. Open any design file. **Select one element**, run **Plugins → Development → Relay — Handoff Intent**.
-5. Pick a tab (Interaction / States / A11y), type the intent, **Add note**. Add a few.
-6. Click **Export Markdown** to see the page spec.
-7. Switch the file to **Dev Mode** (top-right toggle), run Relay again, select the same element —
-   you'll see the notes read-only, and can export.
+## Repo + token
 
-To reload after editing the code: **Plugins → Development → Relay → right-click → Reload**, or
-re-run the plugin.
+- **GitHub**: classic PAT with the **`repo`** scope (simplest), or a fine-grained PAT with **Contents** and
+  **Pull requests** read/write on the repo.
+- **GitLab**: PAT with the **`api`** scope.
+- The token lives in Figma `clientStorage` (local, per user) — never saved in the file.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `manifest.json` | Plugin manifest (runs in both `figma` and `dev` editors) |
-| `code.js` | Plugin main thread — storage, selection, export |
-| `ui.html` | Plugin UI — authoring + read-only views |
-
-## Roadmap (post-MVP)
-
-- More intent types: responsive/breakpoints, motion, content rules, edge cases, data binding.
-- Native Dev Mode **inspect panel** integration + codegen output.
-- Team templates, status workflow, Jira/Linear/Storybook export.
-- See `../figma-handoff-plugin-spec.md` for the full spec.
+| `manifest.json` | Plugin manifest (network access to GitHub/GitLab APIs) |
+| `code.js` | Main thread — change storage, repo settings, commit orchestration |
+| `ui.html` | UI — add change, list, repo setup, GitHub/GitLab commit |
 
 ## License
 

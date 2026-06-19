@@ -5,170 +5,262 @@
 <style>
   :root { color-scheme: light dark; }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 12px;
-    color: var(--figma-color-text, #1e1e1e);
-    background: var(--figma-color-bg, #fff);
-  }
-  .pad { padding: 12px 14px; }
-  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; }
-  .title { font-weight: 700; font-size: 13px; }
-  .badge { font-size: 10px; padding: 2px 7px; border-radius: 999px;
-    background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text-secondary, #666); }
-  .sel { font-size: 11px; color: var(--figma-color-text-secondary, #666); margin-bottom: 10px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tabs { display:flex; gap:6px; margin-bottom: 8px; }
-  .tab { flex:1; padding:7px 0; text-align:center; border-radius:7px; cursor:pointer;
-    border:1px solid var(--figma-color-border, #e0e0e0); background:transparent;
-    color: var(--figma-color-text, #1e1e1e); font-size:11px; }
-  .tab.active { background: var(--figma-color-bg-brand, #0d99ff); color:#fff; border-color: transparent; }
-  textarea { width:100%; min-height:64px; resize:vertical; padding:8px; border-radius:7px;
-    border:1px solid var(--figma-color-border, #e0e0e0); background: var(--figma-color-bg, #fff);
-    color: var(--figma-color-text, #1e1e1e); font-family: inherit; font-size: 12px; }
-  .row { display:flex; gap:6px; margin-top:8px; }
-  button.primary { background: var(--figma-color-bg-brand, #0d99ff); color:#fff; border:0;
-    padding:8px 12px; border-radius:7px; cursor:pointer; font-weight:600; }
-  button.ghost { background:transparent; border:1px solid var(--figma-color-border,#e0e0e0);
-    color: var(--figma-color-text,#1e1e1e); padding:8px 12px; border-radius:7px; cursor:pointer; }
-  .list { margin-top: 12px; border-top:1px solid var(--figma-color-border,#eee); }
-  .item { padding:9px 0; border-bottom:1px solid var(--figma-color-border,#eee); }
-  .item .meta { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
-  .kind { font-size:10px; text-transform:uppercase; letter-spacing:.4px; font-weight:700;
-    color: var(--figma-color-text-brand, #0d99ff); }
-  .status { font-size:10px; padding:1px 6px; border-radius:999px; cursor:pointer;
+  body { margin: 0; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  .pad { padding: 12px 14px 16px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .title { font-weight:700; font-size:13px; }
+  .badge { font-size:10px; padding:2px 7px; border-radius:999px;
     background: var(--figma-color-bg-secondary,#f0f0f0); color: var(--figma-color-text-secondary,#666); }
-  .status.ready { background: #1ea97c; color:#fff; }
-  .item .text { font-size:12px; line-height:1.45; white-space:pre-wrap; }
-  .item .actions { margin-top:4px; }
-  .item .actions a { font-size:10px; color: var(--figma-color-text-secondary,#888); cursor:pointer; text-decoration:underline; }
-  .empty { color: var(--figma-color-text-secondary,#888); font-size:11px; padding:14px 0; text-align:center; }
-  .footer { position: sticky; bottom:0; padding:10px 14px; border-top:1px solid var(--figma-color-border,#eee);
-    background: var(--figma-color-bg,#fff); display:flex; gap:6px; }
-  .md { width:100%; min-height:120px; margin-top:8px; font-family: ui-monospace, monospace; font-size:11px; }
+  .repobar { display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:8px;
+    background: var(--figma-color-bg-secondary,#f5f6f8); margin-bottom:10px; }
+  .repobar .rlabel { flex:1; font-size:11px; color: var(--figma-color-text-secondary,#777);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .link { background:none; border:0; color: var(--figma-color-text-brand,#0d99ff); cursor:pointer; font-size:11px; padding:0; }
+  .card { border:1px solid var(--figma-color-border,#eaeaea); border-radius:10px; padding:11px; margin-bottom:12px; }
+  .selbar { font-size:11px; color: var(--figma-color-text-secondary,#777); margin-bottom:9px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .selbar b { color: var(--figma-color-text,#1e1e1e); }
+  label.fl { display:block; font-size:11px; font-weight:600; margin:8px 0 4px; }
+  label.fl:first-child { margin-top:0; }
+  input, textarea { width:100%; padding:8px; border-radius:7px; border:1px solid var(--figma-color-border,#d0d0d0);
+    background: var(--figma-color-bg,#fff); color: var(--figma-color-text,#1e1e1e); font-family: inherit; font-size:12px; }
+  textarea { min-height:54px; resize:vertical; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  button.primary { background: var(--figma-color-bg-brand,#0d99ff); color:#fff; border:0; padding:8px 12px;
+    border-radius:7px; cursor:pointer; font-weight:600; }
+  button.primary:disabled { opacity:.4; cursor:default; }
+  button.ghost { background: var(--figma-color-bg-secondary,#f0f1f3); border:1px solid var(--figma-color-border,#c4c7cc);
+    color: var(--figma-color-text,#1e1e1e); padding:8px 12px; border-radius:7px; cursor:pointer; font-weight:500; }
+  button.wide { width:100%; padding:11px; margin-top:4px; }
+  .err { color:#d33; font-size:11px; margin-top:6px; min-height:14px; }
+  .micro2 { font-size:10px; color: var(--figma-color-text-secondary,#999); margin-top:6px; }
+  .tokstate { font-size:10px; font-weight:400; color:#1ea97c; }
+  .list-h { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color: var(--figma-color-text-secondary,#888);
+    margin:4px 0 8px; }
+  .item { border:1px solid var(--figma-color-border,#eaeaea); border-radius:9px; padding:9px 10px; margin-bottom:7px;
+    background: var(--figma-color-bg-secondary,#fafafa); }
+  .cel { font-size:11px; font-weight:700; color: var(--figma-color-text-brand,#0d99ff); margin-bottom:3px; }
+  .det { font-weight:400; color: var(--figma-color-text-secondary,#999); font-size:10px; }
+  .cd { font-size:12px; line-height:1.45; white-space:pre-wrap; }
+  .crow { display:flex; align-items:center; gap:10px; margin-top:5px; }
+  .cj { flex:1; font-size:10px; color: var(--figma-color-text-secondary,#777); cursor:pointer; text-decoration:underline;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .del { font-size:10px; color: var(--figma-color-text-secondary,#999); cursor:pointer; text-decoration:underline; }
+  .empty { color: var(--figma-color-text-secondary,#999); font-size:11px; padding:12px 0; text-align:center; }
+  .sync { font-size:11px; margin-top:8px; min-height:14px; color: var(--figma-color-text-secondary,#888); word-break:break-all; }
+  .sync.ok { color:#1ea97c; } .sync.warn { color:#b8860b; }
+  .sync a { color: var(--figma-color-text-brand,#0d99ff); }
   .hide { display:none; }
-  .err { color:#d33; font-size:11px; margin-top:6px; min-height: 14px; }
-  .readonly-note { font-size:11px; color: var(--figma-color-text-secondary,#888);
-    background: var(--figma-color-bg-secondary,#f6f6f6); padding:8px; border-radius:7px; margin-bottom:8px; }
+  .ro { font-size:11px; color:#b8860b; margin-bottom:10px; }
 </style>
 </head>
 <body>
   <div class="pad">
-    <div class="head">
-      <span class="title">Relay</span>
-      <span class="badge" id="mode">design</span>
-    </div>
-    <div class="sel" id="sel">No selection</div>
+    <div class="head"><span class="title">Relay</span><span class="badge" id="modeBadge">design</span></div>
 
-    <!-- AUTHORING (design mode) -->
-    <div id="author">
-      <div class="tabs">
-        <button class="tab active" data-kind="interaction">Interaction</button>
-        <button class="tab" data-kind="states">States</button>
-        <button class="tab" data-kind="accessibility">A11y</button>
-      </div>
-      <textarea id="text" placeholder="Describe the intent a developer can't see in the pixels…"></textarea>
+    <div class="ro hide" id="roNote">Dev Mode — read only. Switch to Design mode to log changes.</div>
+
+    <!-- repo bar -->
+    <div class="repobar">
+      <span class="rlabel" id="repoLabel">No repository set</span>
+      <button class="link" id="changeRepo">Set up</button>
+    </div>
+
+    <!-- repo setup -->
+    <div id="setup" class="card hide">
+      <label class="fl" for="repoUrl">Repository URL (GitHub or GitLab)</label>
+      <input id="repoUrl" type="text" placeholder="https://github.com/owner/repo" />
+      <label class="fl" for="repoToken">Access token <span id="tokState" class="tokstate"></span></label>
+      <input id="repoToken" type="password" placeholder="GitHub classic PAT (repo) or GitLab PAT (api)" />
+      <div class="micro2">The repo URL is saved with this Figma file; the token is stored locally on your machine only.</div>
       <div class="row">
-        <button class="primary" id="addBtn">Add note</button>
-        <button class="ghost" id="exportBtn">Export Markdown</button>
+        <button class="primary" id="saveRepo">Save</button>
+        <button class="ghost" id="cancelSetup">Cancel</button>
+        <button class="ghost" id="clearTok">Clear token</button>
       </div>
+    </div>
+
+    <!-- add a change -->
+    <div class="card">
+      <div class="selbar" id="selbar">For: <b>(no selection)</b></div>
+      <label class="fl" for="jira">Jira link (optional)</label>
+      <input id="jira" type="text" placeholder="https://yourteam.atlassian.net/browse/PROJ-123" />
+      <label class="fl" for="desc">Description</label>
+      <textarea id="desc" placeholder="What changed…"></textarea>
+      <div class="row"><button class="primary" id="addChange">Add change</button></div>
       <div class="err" id="err"></div>
     </div>
 
-    <!-- READ ONLY (dev mode) -->
-    <div id="readonly" class="hide">
-      <div class="readonly-note">Dev Mode — read only. Select an element to see the designer's intent, then export.</div>
-      <button class="ghost" id="exportBtnDev">Export Markdown</button>
-    </div>
+    <div class="list-h">Changes</div>
+    <div id="list"></div>
 
-    <div class="list" id="list"></div>
-
-    <textarea class="md hide" id="md" readonly></textarea>
+    <button class="primary wide" id="commit">Commit Changes</button>
+    <div class="sync" id="status"></div>
   </div>
 
   <script>
-    var currentKind = "interaction";
-    var mode = "figma";
-
-    document.querySelectorAll(".tab").forEach(function (t) {
-      t.onclick = function () {
-        document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
-        t.classList.add("active");
-        currentKind = t.getAttribute("data-kind");
-      };
-    });
-
+    var editable = true;
+    function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     function send(msg) { parent.postMessage({ pluginMessage: msg }, "*"); }
+    function shortRepo(u) { return (u || "").replace(/^https?:\/\//, "").replace(/\/$/, ""); }
+    function jiraShort(u) { var m = (u || "").match(/([A-Z][A-Z0-9]+-\d+)/); return m ? m[1] : u; }
 
-    document.getElementById("addBtn").onclick = function () {
-      var text = document.getElementById("text").value.trim();
-      if (!text) return;
-      send({ type: "add", kind: currentKind, text: text });
-      document.getElementById("text").value = "";
+    document.getElementById("changeRepo").onclick = function () {
+      document.getElementById("setup").classList.remove("hide");
     };
-    document.getElementById("exportBtn").onclick = function () { send({ type: "export" }); };
-    document.getElementById("exportBtnDev").onclick = function () { send({ type: "export" }); };
+    document.getElementById("cancelSetup").onclick = function () {
+      document.getElementById("setup").classList.add("hide");
+    };
+    document.getElementById("saveRepo").onclick = function () {
+      send({ type: "saveRepo", repo: document.getElementById("repoUrl").value.trim(), token: document.getElementById("repoToken").value.trim() });
+      document.getElementById("repoToken").value = "";
+      document.getElementById("setup").classList.add("hide");
+    };
+    document.getElementById("clearTok").onclick = function () { send({ type: "clearToken" }); };
 
-    function render(annotations, editable) {
-      var list = document.getElementById("list");
-      list.innerHTML = "";
-      if (!annotations || !annotations.length) {
-        list.innerHTML = '<div class="empty">No intent notes on this element yet.</div>';
-        return;
+    document.getElementById("addChange").onclick = function () {
+      var jira = document.getElementById("jira").value.trim();
+      var desc = document.getElementById("desc").value.trim();
+      if (!jira && !desc) { document.getElementById("err").textContent = "Add a description or a Jira link."; return; }
+      send({ type: "addChange", jira: jira, desc: desc });
+      document.getElementById("jira").value = "";
+      document.getElementById("desc").value = "";
+      document.getElementById("err").textContent = "";
+    };
+
+    document.getElementById("commit").onclick = function () {
+      var st = document.getElementById("status");
+      st.className = "sync"; st.textContent = "Committing…";
+      send({ type: "commit", repo: document.getElementById("repoUrl").value.trim(), token: document.getElementById("repoToken").value.trim() });
+    };
+
+    function renderChanges(changes) {
+      var box = document.getElementById("list");
+      box.innerHTML = "";
+      document.getElementById("commit").disabled = !changes.length || !editable;
+      if (!changes.length) { box.innerHTML = '<div class="empty">No changes yet. Select an element, describe what changed, and Add change.</div>'; return; }
+      changes.forEach(function (c) {
+        var row = document.createElement("div");
+        row.className = "item";
+        var head = c.element ? '<div class="cel">▸ ' + esc(c.element) + (c.details ? ' <span class="det">' + esc(c.details) + '</span>' : '') + '</div>' : "";
+        var d = c.desc ? '<div class="cd">' + esc(c.desc) + '</div>' : "";
+        var j = c.jira ? '<a class="cj" data-url="' + esc(c.jira) + '">' + esc(jiraShort(c.jira)) + '</a>' : '<span class="cj"></span>';
+        row.innerHTML = head + d + '<div class="crow">' + j + '<a class="del" data-id="' + c.id + '">delete</a></div>';
+        box.appendChild(row);
+      });
+      box.querySelectorAll(".del").forEach(function (el) {
+        el.onclick = function () { send({ type: "deleteChange", id: el.getAttribute("data-id") }); };
+      });
+      box.querySelectorAll(".cj[data-url]").forEach(function (el) {
+        el.onclick = function () { send({ type: "openUrl", url: el.getAttribute("data-url") }); };
+      });
+    }
+
+    // ----- GitHub / GitLab commit -----
+    function b64(str) { return btoa(unescape(encodeURIComponent(str))); }
+    async function ghErr(r, label) { var m = ""; try { m = (await r.json()).message || ""; } catch (e) {} throw new Error(label + " (" + r.status + (m ? ": " + m : "") + ")"); }
+
+    function u8toB64(arr) { var s = ""; for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]); return btoa(s); }
+
+    async function commitRepo(repoUrl, token, files, fileName) {
+      var u = repoUrl.replace(/\/+$/, "").replace(/\/(tree|blob)\/[^\/]+\/?$/, "");
+      if (u.indexOf("github.com") > -1) return githubCommit(u, token, files, fileName);
+      if (u.indexOf("gitlab.com") > -1) return gitlabCommit(u, token, files, fileName);
+      throw new Error("URL must be a github.com or gitlab.com repository.");
+    }
+
+    async function githubCommit(url, token, files, fileName) {
+      var mm = url.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?\/?$/);
+      if (!mm) throw new Error("Couldn't parse owner/repo from the URL.");
+      var api = "https://api.github.com/repos/" + mm[1] + "/" + mm[2];
+      var H = { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
+      var title = "Relay changes — " + fileName, branch = "relay-changes-" + Date.now();
+      var r = await fetch(api, { headers: H }); if (!r.ok) await ghErr(r, "Repo read");
+      var base = (await r.json()).default_branch;
+      r = await fetch(api + "/git/ref/heads/" + base, { headers: H }); if (!r.ok) await ghErr(r, "Read base branch");
+      var sha = (await r.json()).object.sha;
+      r = await fetch(api + "/git/refs", { method: "POST", headers: H, body: JSON.stringify({ ref: "refs/heads/" + branch, sha: sha }) });
+      if (!r.ok) await ghErr(r, "Create branch");
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i], existingSha = null;
+        var cr = await fetch(api + "/contents/" + f.path + "?ref=" + base, { headers: H });
+        if (cr.ok) existingSha = (await cr.json()).sha;
+        var body = { message: title, content: f.b64, branch: branch };
+        if (existingSha) body.sha = existingSha;
+        r = await fetch(api + "/contents/" + f.path, { method: "PUT", headers: H, body: JSON.stringify(body) });
+        if (!r.ok) await ghErr(r, "Commit " + f.path);
       }
-      annotations.forEach(function (a) {
-        var item = document.createElement("div");
-        item.className = "item";
-        var statusCls = a.status === "ready" ? "status ready" : "status";
-        item.innerHTML =
-          '<div class="meta"><span class="kind">' + a.kind + '</span>' +
-          '<span class="' + statusCls + '" data-id="' + a.id + '" data-act="toggle">' + a.status + '</span></div>' +
-          '<div class="text"></div>' +
-          (editable ? '<div class="actions"><a data-id="' + a.id + '" data-act="delete">delete</a></div>' : '');
-        item.querySelector(".text").textContent = a.text;
-        list.appendChild(item);
-      });
-      list.querySelectorAll("[data-act]").forEach(function (el) {
-        el.onclick = function () {
-          if (!editable) return;
-          send({ type: el.getAttribute("data-act"), id: el.getAttribute("data-id") });
-        };
-      });
+      r = await fetch(api + "/pulls", { method: "POST", headers: H, body: JSON.stringify({ title: title, head: branch, base: base, body: "Generated by Relay." }) });
+      if (!r.ok) await ghErr(r, "Open PR");
+      return (await r.json()).html_url;
+    }
+
+    async function gitlabCommit(url, token, files, fileName) {
+      var mm = url.match(/gitlab\.com\/(.+?)(?:\.git)?\/?$/);
+      if (!mm) throw new Error("Couldn't parse project path from the URL.");
+      var api = "https://gitlab.com/api/v4/projects/" + encodeURIComponent(mm[1]);
+      var H = { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
+      var title = "Relay changes — " + fileName, branch = "relay-changes-" + Date.now();
+      var r = await fetch(api, { headers: H }); if (!r.ok) throw new Error("Project read (" + r.status + ")");
+      var target = (await r.json()).default_branch;
+      var actions = [];
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        var ex = await fetch(api + "/repository/files/" + encodeURIComponent(f.path) + "?ref=" + target, { headers: H });
+        actions.push({ action: ex.ok ? "update" : "create", file_path: f.path, content: f.b64, encoding: "base64" });
+      }
+      r = await fetch(api + "/repository/commits", { method: "POST", headers: H, body: JSON.stringify({ branch: branch, start_branch: target, commit_message: title, actions: actions }) });
+      if (!r.ok) throw new Error("Commit files (" + r.status + ")");
+      r = await fetch(api + "/merge_requests", { method: "POST", headers: H, body: JSON.stringify({ source_branch: branch, target_branch: target, title: title, description: "Generated by Relay." }) });
+      if (!r.ok) throw new Error("Open MR (" + r.status + ")");
+      return (await r.json()).web_url;
+    }
+
+    async function runCommit(m) {
+      var st = document.getElementById("status");
+      try {
+        var files = [{ path: "handoff/changes.md", b64: b64(m.markdown) }];
+        (m.images || []).forEach(function (img) { files.push({ path: "handoff/img/" + img.name, b64: u8toB64(img.bytes) }); });
+        var url = await commitRepo(m.repoUrl, m.token, files, m.fileName);
+        st.className = "sync ok";
+        st.innerHTML = "✓ Committed: <a id='cl' href='#'>" + esc(url) + "</a>";
+        document.getElementById("cl").onclick = function (e) { e.preventDefault(); send({ type: "openUrl", url: url }); };
+        send({ type: "committed" });
+      } catch (e) {
+        st.className = "sync warn";
+        st.textContent = "Failed: " + (e && e.message ? e.message : e);
+      }
     }
 
     onmessage = function (e) {
       var msg = e.data.pluginMessage;
       if (!msg) return;
-
       if (msg.type === "state") {
-        mode = msg.mode;
-        var editable = mode === "figma";
-        document.getElementById("mode").textContent = editable ? "design" : "dev mode";
-        document.getElementById("author").classList.toggle("hide", !editable);
-        document.getElementById("readonly").classList.toggle("hide", editable);
+        editable = msg.editable;
+        document.getElementById("modeBadge").textContent = editable ? "design" : "dev mode";
+        document.getElementById("roNote").classList.toggle("hide", editable);
+        document.getElementById("addChange").disabled = !editable;
 
-        var sel = document.getElementById("sel");
-        if (msg.multiple) sel.textContent = "Select a single element";
-        else if (msg.node) sel.textContent = "▸ " + msg.node.name;
-        else sel.textContent = "No selection";
+        var repo = msg.repo || "";
+        document.getElementById("repoUrl").value = repo;
+        document.getElementById("repoLabel").textContent = repo ? shortRepo(repo) : "No repository set";
+        document.getElementById("changeRepo").textContent = repo ? "Change" : "Set up";
+        document.getElementById("tokState").textContent = msg.hasToken ? "✓ saved" : "(not set)";
+        if (!repo) document.getElementById("setup").classList.remove("hide");
 
-        render(msg.annotations, editable);
-        document.getElementById("md").classList.add("hide");
-        document.getElementById("err").textContent = "";
+        var selTxt = msg.selection ? esc(msg.selection) : "(no selection)";
+        var selDet = msg.selectionDetails ? ' <span class="det">' + esc(msg.selectionDetails) + '</span>' : "";
+        document.getElementById("selbar").innerHTML = "For: <b>" + selTxt + "</b>" + selDet;
+
+        renderChanges(msg.changes || []);
       }
-
-      if (msg.type === "error") {
-        document.getElementById("err").textContent = msg.message;
+      if (msg.type === "err") { document.getElementById("err").textContent = msg.message; }
+      if (msg.type === "commitDone" && !msg.ok) {
+        var st = document.getElementById("status");
+        st.className = "sync warn"; st.textContent = "Failed: " + (msg.message || "unknown error");
       }
-
-      if (msg.type === "markdown") {
-        var md = document.getElementById("md");
-        md.value = msg.markdown;
-        md.classList.remove("hide");
-        md.focus();
-        md.select();
-      }
+      if (msg.type === "doCommit") { runCommit(msg); }
     };
   </script>
 </body>
