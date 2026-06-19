@@ -152,7 +152,8 @@ function buildPrBody() {
     "",
     "1. Read `handoff/changes.json` — each change has a description, Jira link, and the changed Figma elements (name, nodeId, screenshot).",
     "2. For each element, fetch the exact spec via the Figma MCP: `get_design_context` (file key + nodeId) and `get_variable_defs` for tokens. Use Code Connect mappings when available.",
-    "3. Implement so the acceptance criteria in the PRD (below) pass.",
+    "3. Use `handoff/structure.md` to understand the file's layout and naming.",
+    "4. Implement so the acceptance criteria in the PRD (below) pass.",
     "",
     "Screenshots: `handoff/img/`." + (key ? " Figma file key: `" + key + "`." : ""),
     "",
@@ -231,13 +232,15 @@ figma.ui.onmessage = (msg) => {
           const node = figma.getNodeById(ns[idx].id);
           if (node && node.exportAsync) {
             try {
-              const bytes = await node.exportAsync({ format: "PNG", constraint: { type: "SCALE", value: 2 } });
+              const w = node.width || 0;
+              const constraint = w > 1440 ? { type: "WIDTH", value: 1440 } : { type: "SCALE", value: 2 };
+              const bytes = await node.exportAsync({ format: "PNG", constraint: constraint });
               images.push({ name: imgNameFor(ns[idx]), bytes: Array.from(bytes) });
             } catch (e) {}
           }
         }
       }
-      figma.ui.postMessage({ type: "doCommit", repoUrl: repo, token: token, markdown: buildChangesMd(changes), json: buildChangesJson(changes), prBody: buildPrBody(), fileName: figma.root.name, images: images });
+      figma.ui.postMessage({ type: "doCommit", repoUrl: repo, token: token, markdown: buildChangesMd(changes), structure: buildStructureMd(), json: buildChangesJson(changes), prBody: buildPrBody(), fileName: figma.root.name, images: images });
     };
     if (msg.token) { figma.clientStorage.setAsync("relayToken", msg.token).then(function () { go(msg.token); }); }
     else { figma.clientStorage.getAsync("relayToken").then(go); }
