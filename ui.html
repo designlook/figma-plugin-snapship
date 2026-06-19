@@ -101,7 +101,7 @@
 </head>
 <body>
   <div class="pad">
-    <div class="head"><span class="title">Snapship</span><span class="headlinks"><button class="linkbtn" id="aboutBtn">About</button><span class="sepbar">|</span><button class="linkbtn" id="settingsBtn">Settings</button></span></div>
+    <div class="head"><span class="title">Snapship</span><span class="headlinks"><button class="linkbtn" id="kofiHead" title="Support on Ko-fi">❤️ Support</button><span class="sepbar">|</span><button class="linkbtn" id="aboutBtn">About</button><span class="sepbar">|</span><button class="linkbtn" id="settingsBtn">Settings</button></span></div>
 
     <!-- settings (full panel) -->
     <div id="setup" class="card hide">
@@ -200,7 +200,6 @@
     <button class="primary wide" id="commit">Commit Changes</button>
     <div class="sync" id="status"></div>
     </div>
-    <div class="footer"><a id="kofi">❤️ Enjoying this plugin? Buy me a coffee!</a></div>
     </div>
   </div>
 
@@ -233,7 +232,7 @@
     function closeAbout() { document.getElementById("about").classList.add("hide"); document.getElementById("main").classList.remove("hide"); }
     document.getElementById("aboutBtn").onclick = openAbout;
     document.getElementById("aboutClose").onclick = closeAbout;
-    document.getElementById("kofi").onclick = function () { send({ type: "openUrl", url: "https://ko-fi.com/designlook" }); };
+    document.getElementById("kofiHead").onclick = function () { send({ type: "openUrl", url: "https://ko-fi.com/designlook" }); };
     document.getElementById("kofi2").onclick = function () { send({ type: "openUrl", url: "https://ko-fi.com/designlook" }); };
     function closeSettings() { document.getElementById("setup").classList.add("hide"); document.getElementById("main").classList.remove("hide"); }
     document.getElementById("settingsBtn").onclick = function () {
