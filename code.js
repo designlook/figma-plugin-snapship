@@ -177,7 +177,7 @@ async function exportImages(changes) {
   for (const c of changes) {
     const ns = changeNodes(c);
     for (let idx = 0; idx < ns.length; idx++) {
-      const node = figma.getNodeById(ns[idx].id);
+      const node = await figma.getNodeByIdAsync(ns[idx].id);
       if (node && node.exportAsync) {
         try {
           const w = node.width || 0;
@@ -290,25 +290,27 @@ figma.ui.onmessage = (msg) => {
     setDoc("repoUrl", url);
     if (msg.folder !== undefined) setDoc("folder", msg.folder || "");
     const commitFolder = (msg.folder !== undefined ? msg.folder : getDoc("folder", "")) || "";
-    const structure = getDoc("skipStructure", "0") === "1" ? "" : buildStructureMd();
 
-    if (url === "__zip__") {
-      const base = sanitizeFolder(commitFolder);
-      exportImages(changes).then(function (images) {
+    (async function () {
+      let structure = "";
+      if (getDoc("skipStructure", "0") !== "1") {
+        try { await figma.loadAllPagesAsync(); } catch (e) {}
+        structure = buildStructureMd();
+      }
+      const images = await exportImages(changes);
+
+      if (url === "__zip__") {
+        const base = sanitizeFolder(commitFolder);
         figma.ui.postMessage({ type: "doZip", markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), fileName: figma.root.name, base: base, images: images });
-      });
-      return;
-    }
-
-    if (!url) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "Add a repository in Settings first." }); return; }
-    getReposAsync().then(function (repos) {
+        return;
+      }
+      if (!url) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "Add a repository in Settings first." }); return; }
+      const repos = await getReposAsync();
       const entry = repos.filter(function (r) { return r.url === url; })[0];
       if (!entry || !entry.token) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "That repository has no token — add it in Settings." }); return; }
       const base = sanitizeFolder([entry.folder || "", commitFolder].filter(Boolean).join("/"));
-      exportImages(changes).then(function (images) {
-        figma.ui.postMessage({ type: "doCommit", repoUrl: url, token: entry.token, markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), prBody: buildPrBody(base), fileName: figma.root.name, base: base, images: images });
-      });
-    });
+      figma.ui.postMessage({ type: "doCommit", repoUrl: url, token: entry.token, markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), prBody: buildPrBody(base), fileName: figma.root.name, base: base, images: images });
+    })();
     return;
   }
 

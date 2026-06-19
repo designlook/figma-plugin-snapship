@@ -5,6 +5,7 @@
   "main": "code.js",
   "ui": "ui.html",
   "editorType": ["figma", "dev"],
+  "documentAccess": "dynamic-page",
   "enablePrivatePluginApi": true,
   "networkAccess": {
     "allowedDomains": ["https://api.github.com", "https://gitlab.com"],
