@@ -26,9 +26,27 @@
   input, textarea { width:100%; padding:8px; border-radius:7px; border:1px solid var(--figma-color-border,#d0d0d0);
     background: var(--figma-color-bg,#fff); color: var(--figma-color-text,#1e1e1e); font-family: inherit; font-size:12px; }
   textarea { min-height:54px; resize:vertical; }
-  #desc { min-height:108px; }
+  #desc { min-height:54px; }
   .iconbtn { background:none; border:0; font-size:16px; line-height:1; cursor:pointer; color: var(--figma-color-text-secondary,#888); padding:2px 4px; }
   .iconbtn:hover { color: var(--figma-color-text,#1e1e1e); }
+  .headlinks { display:flex; align-items:center; gap:6px; }
+  .linkbtn { background:none; border:0; cursor:pointer; font-size:11px; color: var(--figma-color-text-brand,#0d99ff); padding:0; }
+  .linkbtn:hover { text-decoration:underline; }
+  .sepbar { color: var(--figma-color-text-secondary,#cbd0d8); font-size:11px; }
+  .footer { text-align:center; margin-top:12px; }
+  .footer a { font-size:11px; color: var(--figma-color-text-secondary,#888); cursor:pointer; }
+  .footer a:hover { text-decoration:underline; }
+  .dropzone { border:1px dashed var(--figma-color-border,#c4c7cc); border-radius:8px; padding:14px; text-align:center;
+    font-size:11px; color: var(--figma-color-text-secondary,#999); cursor:pointer; }
+  .dropzone.drag { border-color: var(--figma-color-bg-brand,#0d99ff); color: var(--figma-color-text,#1e1e1e); background: var(--figma-color-bg-secondary,#f3f7ff); }
+  .attitem { display:flex; align-items:center; gap:8px; font-size:11px; padding:5px 2px; }
+  .attitem .u { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .attitem .del { color: var(--figma-color-text-secondary,#999); cursor:pointer; text-decoration:underline; }
+  .attlink { font-size:10px; color: var(--figma-color-text-brand,#0d99ff); cursor:pointer; text-decoration:underline; margin-left:8px; text-transform:none; letter-spacing:0; font-weight:400; }
+  #attachArea { margin:8px 0; }
+  .about p { font-size:11px; color: var(--figma-color-text-secondary,#777); line-height:1.5; margin:8px 0; }
+  .about ol { font-size:11px; color: var(--figma-color-text-secondary,#777); line-height:1.5; padding-left:18px; margin:6px 0; }
+  .about a { color: var(--figma-color-text-brand,#0d99ff); cursor:pointer; text-decoration:underline; }
   .reuse { display:flex; align-items:center; gap:6px; font-size:11px; color: var(--figma-color-text-secondary,#777); margin-top:7px; }
   .reuse input { width:auto; }
   .row { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
@@ -38,7 +56,8 @@
   button.ghost { background: var(--figma-color-bg-secondary,#f0f1f3); border:1px solid var(--figma-color-border,#c4c7cc);
     color: var(--figma-color-text,#1e1e1e); padding:8px 12px; border-radius:7px; cursor:pointer; font-weight:500; }
   button.wide { width:100%; padding:11px; margin-top:4px; }
-  .err { color:#d33; font-size:11px; margin-top:6px; min-height:14px; }
+  .err { color:#d33; font-size:11px; margin-top:6px; min-height:0; }
+  .err:empty { margin-top:0; }
   .micro2 { font-size:10px; color: var(--figma-color-text-secondary,#999); margin-top:6px; }
   select { width:100%; padding:8px; border-radius:7px; border:1px solid var(--figma-color-border,#d0d0d0); background: var(--figma-color-bg,#fff); color: var(--figma-color-text,#1e1e1e); font-family:inherit; font-size:12px; }
   .sep { border-top:1px solid var(--figma-color-border,#eee); margin:12px 0; }
@@ -82,7 +101,7 @@
 </head>
 <body>
   <div class="pad">
-    <div class="head"><span class="title">Snapship</span><button class="iconbtn" id="settingsBtn" title="Settings — repository & token">⚙</button></div>
+    <div class="head"><span class="title">Snapship</span><span class="headlinks"><button class="linkbtn" id="aboutBtn">About</button><span class="sepbar">|</span><button class="linkbtn" id="settingsBtn">Settings</button></span></div>
 
     <!-- settings (full panel) -->
     <div id="setup" class="card hide">
@@ -104,7 +123,8 @@
         </div>
 
         <div class="sep"></div>
-        <label class="reuse"><input type="checkbox" id="reuseId" checked /> Reuse folder for the next change</label>
+        <label class="reuse"><input type="checkbox" id="clearFolder" /> Clear folder after each commit</label>
+        <label class="reuse"><input type="checkbox" id="skipStructure" /> Skip structure map (faster commits)</label>
         <div class="row" style="margin-top:12px;"><button class="ghost" id="cancelSetup">Close</button></div>
       </div>
 
@@ -120,6 +140,20 @@
           <button class="ghost" id="cancelEdit">Cancel</button>
         </div>
       </div>
+    </div>
+
+    <div id="about" class="card hide about">
+      <div class="setlabel">About Snapship</div>
+      <p>Snapship turns the design changes you make in Figma into a pull/merge request — a written change log, a machine-readable manifest (changes.json), and a screenshot of each changed element — so developers and AI agents can implement them from a PRD.</p>
+      <b style="font-size:12px;">How it works</b>
+      <ol>
+        <li>Select a frame or element in Figma.</li>
+        <li>Describe what changed, and Add change.</li>
+        <li>Commit Changes → opens a PR/MR in your repo (or Download as ZIP).</li>
+        <li>Point your own AI coding agent (Cursor, Claude Code, etc.) at the branch — it reads changes.json + screenshots to implement the changes (and your PRD, if you linked one).</li>
+      </ol>
+      <p><a id="kofi2">❤️ Enjoying this plugin? Buy me a coffee!</a></p>
+      <div class="row"><button class="ghost" id="aboutClose">Close</button></div>
     </div>
 
     <div id="main">
@@ -145,22 +179,28 @@
       <div class="selwarn hide" id="selwarn"></div>
       <label class="fl" for="desc">Description</label>
       <textarea id="desc" placeholder="What changed…"></textarea>
-      <label class="fl" for="folder">Commit folder (optional)</label>
-      <input id="folder" type="text" placeholder="e.g. NX-3829" />
-      <div class="micro2" id="folderHint">Added under the repo's default folder.</div>
       <div class="row"><button class="primary" id="addChange">Add change</button></div>
       <div class="err" id="err"></div>
     </div>
 
     <div id="rest">
-    <div class="list-h">Changes</div>
+    <div class="list-h">Changes <a id="attachToggle" class="attlink">attach files</a></div>
     <div id="list"></div>
+    <div id="attachArea" class="hide">
+      <div id="dropzone" class="dropzone">Drag &amp; drop files here, or click to choose</div>
+      <input type="file" id="fileInput" multiple style="display:none" />
+      <div id="attachList"></div>
+    </div>
 
     <label class="fl" for="prTitle">PR / MR title</label>
-    <input id="prTitle" type="text" placeholder="Design changes —…" />
+    <input id="prTitle" type="text" placeholder="PR / MR title" />
+    <label class="fl" for="folder">Commit folder (optional)</label>
+    <input id="folder" type="text" placeholder="e.g. NX-3829" />
+    <div class="micro2" id="folderHint">Added under the repo's default folder.</div>
     <button class="primary wide" id="commit">Commit Changes</button>
     <div class="sync" id="status"></div>
     </div>
+    <div class="footer"><a id="kofi">❤️ Enjoying this plugin? Buy me a coffee!</a></div>
     </div>
   </div>
 
@@ -169,6 +209,7 @@
     var selectedUrl = "";
     var editingUrl = "";
     var prevEditing = null;
+    var attachments = [];
     function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     function send(msg) { parent.postMessage({ pluginMessage: msg }, "*"); }
     function shortRepo(u) { return (u || "").replace(/^https?:\/\//, "").replace(/\/$/, ""); }
@@ -187,7 +228,13 @@
       document.getElementById("repoEditor").classList.add("hide");
       document.getElementById("repoListView").classList.remove("hide");
     }
-    function openSettings() { exitEdit(); document.getElementById("setup").classList.remove("hide"); document.getElementById("main").classList.add("hide"); }
+    function openSettings() { exitEdit(); document.getElementById("about").classList.add("hide"); document.getElementById("setup").classList.remove("hide"); document.getElementById("main").classList.add("hide"); }
+    function openAbout() { document.getElementById("setup").classList.add("hide"); document.getElementById("about").classList.remove("hide"); document.getElementById("main").classList.add("hide"); }
+    function closeAbout() { document.getElementById("about").classList.add("hide"); document.getElementById("main").classList.remove("hide"); }
+    document.getElementById("aboutBtn").onclick = openAbout;
+    document.getElementById("aboutClose").onclick = closeAbout;
+    document.getElementById("kofi").onclick = function () { send({ type: "openUrl", url: "https://ko-fi.com/designlook" }); };
+    document.getElementById("kofi2").onclick = function () { send({ type: "openUrl", url: "https://ko-fi.com/designlook" }); };
     function closeSettings() { document.getElementById("setup").classList.add("hide"); document.getElementById("main").classList.remove("hide"); }
     document.getElementById("settingsBtn").onclick = function () {
       if (document.getElementById("setup").classList.contains("hide")) openSettings(); else closeSettings();
@@ -211,7 +258,8 @@
       exitEdit();
     };
     document.getElementById("cancelEdit").onclick = exitEdit;
-    document.getElementById("reuseId").onchange = function () { send({ type: "setReuse", on: this.checked }); };
+    document.getElementById("clearFolder").onchange = function () { send({ type: "setClearFolder", on: this.checked }); };
+    document.getElementById("skipStructure").onchange = function () { send({ type: "setSkipStructure", on: this.checked }); };
 
     document.getElementById("addChange").onclick = function () {
       var folder = document.getElementById("folder").value.trim();
@@ -219,7 +267,6 @@
       if (!desc) { document.getElementById("err").textContent = "Add a description."; return; }
       send({ type: "addChange", folder: folder, desc: desc });
       document.getElementById("desc").value = "";
-      if (!document.getElementById("reuseId").checked) document.getElementById("folder").value = "";
       document.getElementById("err").textContent = "";
     };
 
@@ -228,6 +275,35 @@
       st.className = "sync"; st.textContent = "Committing…";
       send({ type: "commit", repo: selectedUrl, folder: document.getElementById("folder").value.trim() });
     };
+
+    function renderAttach() {
+      var box = document.getElementById("attachList"); box.innerHTML = "";
+      attachments.forEach(function (a, i) {
+        var row = document.createElement("div"); row.className = "attitem";
+        row.innerHTML = '<span class="u">📎 ' + esc(a.name) + '</span><a class="del" data-i="' + i + '">remove</a>';
+        box.appendChild(row);
+      });
+      box.querySelectorAll(".del").forEach(function (el) { el.onclick = function () { attachments.splice(parseInt(el.getAttribute("data-i"), 10), 1); renderAttach(); }; });
+      var tog = document.getElementById("attachToggle");
+      if (tog) tog.textContent = attachments.length ? ("attachments (" + attachments.length + ")") : "attach files";
+      if (attachments.length) document.getElementById("attachArea").classList.remove("hide");
+    }
+    document.getElementById("attachToggle").onclick = function () { document.getElementById("attachArea").classList.toggle("hide"); };
+    function handleFiles(fl) {
+      Array.prototype.forEach.call(fl, function (f) {
+        var reader = new FileReader();
+        reader.onload = function () { attachments.push({ name: f.name, bytes: new Uint8Array(reader.result) }); renderAttach(); };
+        reader.readAsArrayBuffer(f);
+      });
+    }
+    (function () {
+      var dz = document.getElementById("dropzone"), fi = document.getElementById("fileInput");
+      dz.ondragover = function (e) { e.preventDefault(); dz.classList.add("drag"); };
+      dz.ondragleave = function () { dz.classList.remove("drag"); };
+      dz.ondrop = function (e) { e.preventDefault(); dz.classList.remove("drag"); handleFiles(e.dataTransfer.files); };
+      dz.onclick = function () { fi.click(); };
+      fi.onchange = function () { handleFiles(this.files); this.value = ""; };
+    })();
 
     function renderChanges(changes) {
       var box = document.getElementById("list");
@@ -322,17 +398,70 @@
         if (m.json) files.push({ path: base + "/changes.json", b64: b64(m.json) });
         if (m.structure) files.push({ path: base + "/structure.md", b64: b64(m.structure) });
         (m.images || []).forEach(function (img) { files.push({ path: base + "/img/" + img.name, b64: u8toB64(img.bytes) }); });
-        var title = (document.getElementById("prTitle").value.trim()) || ("Design changes —" + (m.fileName || "Figma"));
+        attachments.forEach(function (a) { files.push({ path: base + "/files/" + a.name.replace(/[\/\\]/g, "_"), b64: u8toB64(a.bytes) }); });
+        var title = (document.getElementById("prTitle").value.trim()) || (m.fileName || "Figma");
         var url = await commitRepo(m.repoUrl, m.token, files, title, m.prBody || "Generated by Snapship.");
         st.className = "sync ok";
         st.innerHTML = "✓ Committed: <a id='cl' href='#'>" + esc(url) + "</a>";
         document.getElementById("cl").onclick = function (e) { e.preventDefault(); send({ type: "openUrl", url: url }); };
         send({ type: "committed" });
         document.getElementById("desc").value = "";
-        if (!document.getElementById("reuseId").checked) document.getElementById("folder").value = "";
+        if (document.getElementById("clearFolder").checked) document.getElementById("folder").value = "";
+        attachments = []; renderAttach();
+        document.getElementById("attachArea").classList.add("hide");
       } catch (e) {
         st.className = "sync warn";
         st.textContent = "Failed: " + (e && e.message ? e.message : e);
+      }
+    }
+
+    function strBytes(s) { return new TextEncoder().encode(s); }
+    var crcTable = (function () { var t = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) { c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); } t[n] = c >>> 0; } return t; })();
+    function crc32(b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) { c = crcTable[(c ^ b[i]) & 0xFF] ^ (c >>> 8); } return (c ^ 0xFFFFFFFF) >>> 0; }
+    function makeZip(entries) {
+      function u16(n) { return [n & 0xFF, (n >>> 8) & 0xFF]; }
+      function u32(n) { return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; }
+      var chunks = [], central = [], offset = 0;
+      entries.forEach(function (e) {
+        var nb = strBytes(e.name), crc = crc32(e.data), size = e.data.length;
+        var local = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(size), u32(size), u16(nb.length), u16(0)));
+        chunks.push(local, nb, e.data);
+        var cd = new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(size), u32(size), u16(nb.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset)));
+        central.push(cd, nb);
+        offset += local.length + nb.length + e.data.length;
+      });
+      var centralStart = offset, centralSize = 0;
+      central.forEach(function (a) { centralSize += a.length; });
+      var eocd = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(entries.length), u16(entries.length), u32(centralSize), u32(centralStart), u16(0)));
+      var all = chunks.concat(central); all.push(eocd);
+      var total = 0; all.forEach(function (a) { total += a.length; });
+      var out = new Uint8Array(total), p = 0;
+      all.forEach(function (a) { out.set(a, p); p += a.length; });
+      return out;
+    }
+    function downloadBytes(bytes, filename) {
+      var blob = new Blob([bytes], { type: "application/zip" });
+      var u = URL.createObjectURL(blob);
+      var a = document.createElement("a"); a.href = u; a.download = filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(u); }, 1000);
+    }
+    function runZip(m) {
+      var st = document.getElementById("status");
+      try {
+        var base = m.base || "handoff";
+        var entries = [{ name: base + "/changes.md", data: strBytes(m.markdown) }];
+        if (m.json) entries.push({ name: base + "/changes.json", data: strBytes(m.json) });
+        if (m.structure) entries.push({ name: base + "/structure.md", data: strBytes(m.structure) });
+        (m.images || []).forEach(function (img) { entries.push({ name: base + "/img/" + img.name, data: new Uint8Array(img.bytes) }); });
+        attachments.forEach(function (a) { entries.push({ name: base + "/files/" + a.name.replace(/[\/\\]/g, "_"), data: a.bytes }); });
+        downloadBytes(makeZip(entries), "snapship-" + String(m.fileName || "handoff").replace(/[^A-Za-z0-9._-]/g, "-") + ".zip");
+        st.className = "sync ok"; st.textContent = "✓ ZIP downloaded.";
+        send({ type: "committed" });
+        attachments = []; renderAttach();
+        document.getElementById("attachArea").classList.add("hide");
+      } catch (e) {
+        st.className = "sync warn"; st.textContent = "Failed: " + (e && e.message ? e.message : e);
       }
     }
 
@@ -348,7 +477,12 @@
         selectedUrl = msg.selected || "";
         var list = document.getElementById("repoList");
         list.innerHTML = "";
-        if (!repos.length) list.innerHTML = '<div class="empty-repos">No repositories yet — add one below.</div>';
+        var zipRow = document.createElement("div");
+        zipRow.className = "repoitem" + (msg.selected === "__zip__" ? " active" : "");
+        zipRow.innerHTML = '<span class="u">⤓ Download as ZIP (no repo)</span>';
+        zipRow.onclick = function () { send({ type: "selectRepo", url: "__zip__" }); };
+        list.appendChild(zipRow);
+        if (!repos.length) { var erow = document.createElement("div"); erow.className = "empty-repos"; erow.textContent = "No repositories yet — add one below."; list.appendChild(erow); }
         repos.forEach(function (r) {
           var row = document.createElement("div");
           row.className = "repoitem" + (r.url === msg.selected ? " active" : "");
@@ -362,12 +496,17 @@
           list.appendChild(row);
         });
         var selRepo = repos.filter(function (r) { return r.url === msg.selected; })[0];
-        document.getElementById("repoLabel").textContent = msg.selected ? shortRepo(msg.selected) : "No repository — open Settings ⚙";
+        document.getElementById("repoLabel").textContent = (msg.selected === "__zip__") ? "Download as ZIP (no repo)" : (msg.selected ? shortRepo(msg.selected) : "No repository — open Settings ⚙");
+        var nChanges = (msg.changes || []).length;
+        document.getElementById("commit").textContent = (msg.selected === "__zip__")
+          ? (nChanges ? ("Download " + nChanges + " Change" + (nChanges === 1 ? "" : "s") + " (ZIP)") : "Download ZIP")
+          : (nChanges ? ("Commit " + nChanges + " Change" + (nChanges === 1 ? "" : "s")) : "Commit Changes");
         if (!repos.length) openSettings();
 
-        document.getElementById("reuseId").checked = msg.reuseId !== false;
+        document.getElementById("clearFolder").checked = !!msg.clearFolder;
+        document.getElementById("skipStructure").checked = !!msg.skipStructure;
         var folderEl = document.getElementById("folder");
-        if (msg.reuseId !== false && !folderEl.value && msg.folder) folderEl.value = msg.folder;
+        if (!folderEl.value && msg.folder) folderEl.value = msg.folder;
 
         document.getElementById("folderHint").textContent =
           (selRepo && selRepo.folder) ? ("Added under " + selRepo.folder + "/") : "Default base: handoff";
@@ -381,7 +520,7 @@
         document.getElementById("selbar").innerHTML = "For: <b>" + (msg.selection ? esc(msg.selection) : "(no selection)") + "</b>";
 
         var sw = document.getElementById("selwarn");
-        if ((msg.selectionCount || 0) > 10) {
+        if ((msg.selectionCount || 0) > 40) {
           sw.classList.remove("hide");
           sw.textContent = "⚠ " + msg.selectionCount + " elements selected — that's likely the contents of a frame, not the frame itself. Select the parent frame instead (click the frame once, or pick it in the Layers panel) so the change captures the whole design.";
         } else {
@@ -390,7 +529,7 @@
         }
 
         var prt = document.getElementById("prTitle");
-        if (!prt.value) prt.value = "Design changes —" + (msg.fileName || "Figma");
+        if (!prt.value) prt.value = (msg.fileName || "Figma");
 
         renderChanges(msg.changes || []);
       }
@@ -400,6 +539,7 @@
         st.className = "sync warn"; st.textContent = "Failed: " + (msg.message || "unknown error");
       }
       if (msg.type === "doCommit") { runCommit(msg); }
+      if (msg.type === "doZip") { runZip(msg); }
     };
   </script>
 </body>

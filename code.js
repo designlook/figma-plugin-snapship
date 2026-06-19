@@ -72,7 +72,8 @@ function pushState() {
       selectionCount: figma.currentPage.selection.length,
       fileName: figma.root.name,
       folder: getDoc("folder", ""),
-      reuseId: getDoc("reuseId", "1") === "1"
+      clearFolder: getDoc("clearFolder", "0") === "1",
+      skipStructure: getDoc("skipStructure", "0") === "1"
     });
   });
 }
@@ -165,12 +166,29 @@ function buildPrBody(base) {
     "1. Read `" + base + "/changes.json` — each change has a description and the changed Figma elements (name, nodeId, screenshot).",
     "2. For each element, fetch the exact spec via the Figma MCP: `get_design_context` (file key + nodeId) and `get_variable_defs` for tokens. Use Code Connect mappings when available.",
     "3. Use `" + base + "/structure.md` to understand the file's layout and naming.",
-    "4. Implement so the acceptance criteria in the PRD (below) pass.",
+    "4. Implement the changes described above.",
     "",
-    "Screenshots: `" + base + "/img/`." + (key ? " Figma file key: `" + key + "`." : ""),
-    "",
-    "<!-- Paste PRD link + acceptance criteria here -->"
+    "Screenshots: `" + base + "/img/`." + (key ? " Figma file key: `" + key + "`." : "")
   ].join("\n");
+}
+
+async function exportImages(changes) {
+  const images = [];
+  for (const c of changes) {
+    const ns = changeNodes(c);
+    for (let idx = 0; idx < ns.length; idx++) {
+      const node = figma.getNodeById(ns[idx].id);
+      if (node && node.exportAsync) {
+        try {
+          const w = node.width || 0;
+          const constraint = w > 1440 ? { type: "WIDTH", value: 1440 } : { type: "SCALE", value: 2 };
+          const bytes = await node.exportAsync({ format: "PNG", constraint: constraint });
+          images.push({ name: imgNameFor(ns[idx]), bytes: Array.from(bytes) });
+        } catch (e) {}
+      }
+    }
+  }
+  return images;
 }
 
 figma.ui.onmessage = (msg) => {
@@ -253,46 +271,50 @@ figma.ui.onmessage = (msg) => {
     return;
   }
 
-  if (msg.type === "setReuse") {
-    setDoc("reuseId", msg.on ? "1" : "0");
+  if (msg.type === "setClearFolder") {
+    setDoc("clearFolder", msg.on ? "1" : "0");
+    pushState();
+    return;
+  }
+
+  if (msg.type === "setSkipStructure") {
+    setDoc("skipStructure", msg.on ? "1" : "0");
     pushState();
     return;
   }
 
   if (msg.type === "commit") {
     const url = (msg.repo || getDoc("repoUrl", "")).trim();
-    if (!url) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "Add a repository in Settings first." }); return; }
     const changes = getChanges();
     if (!changes.length) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "No changes to commit." }); return; }
     setDoc("repoUrl", url);
     if (msg.folder !== undefined) setDoc("folder", msg.folder || "");
-    getReposAsync().then(async function (repos) {
+    const commitFolder = (msg.folder !== undefined ? msg.folder : getDoc("folder", "")) || "";
+    const structure = getDoc("skipStructure", "0") === "1" ? "" : buildStructureMd();
+
+    if (url === "__zip__") {
+      const base = sanitizeFolder(commitFolder);
+      exportImages(changes).then(function (images) {
+        figma.ui.postMessage({ type: "doZip", markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), fileName: figma.root.name, base: base, images: images });
+      });
+      return;
+    }
+
+    if (!url) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "Add a repository in Settings first." }); return; }
+    getReposAsync().then(function (repos) {
       const entry = repos.filter(function (r) { return r.url === url; })[0];
       if (!entry || !entry.token) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "That repository has no token — add it in Settings." }); return; }
-      const commitFolder = (msg.folder !== undefined ? msg.folder : getDoc("folder", "")) || "";
       const base = sanitizeFolder([entry.folder || "", commitFolder].filter(Boolean).join("/"));
-      const images = [];
-      for (const c of changes) {
-        const ns = changeNodes(c);
-        for (let idx = 0; idx < ns.length; idx++) {
-          const node = figma.getNodeById(ns[idx].id);
-          if (node && node.exportAsync) {
-            try {
-              const w = node.width || 0;
-              const constraint = w > 1440 ? { type: "WIDTH", value: 1440 } : { type: "SCALE", value: 2 };
-              const bytes = await node.exportAsync({ format: "PNG", constraint: constraint });
-              images.push({ name: imgNameFor(ns[idx]), bytes: Array.from(bytes) });
-            } catch (e) {}
-          }
-        }
-      }
-      figma.ui.postMessage({ type: "doCommit", repoUrl: url, token: entry.token, markdown: buildChangesMd(changes), structure: buildStructureMd(), json: buildChangesJson(changes), prBody: buildPrBody(base), fileName: figma.root.name, base: base, images: images });
+      exportImages(changes).then(function (images) {
+        figma.ui.postMessage({ type: "doCommit", repoUrl: url, token: entry.token, markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), prBody: buildPrBody(base), fileName: figma.root.name, base: base, images: images });
+      });
     });
     return;
   }
 
   if (msg.type === "committed") {
     setChanges([]); // queue pushed — clear it
+    if (getDoc("clearFolder", "0") === "1") setDoc("folder", "");
     pushState();
     return;
   }
