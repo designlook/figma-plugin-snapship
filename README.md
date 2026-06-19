@@ -13,8 +13,9 @@ Zero build step — plain JS, runs straight from `manifest.json`.
   element under `handoff/img/`) on a new branch and opens a **PR / MR**, with a deep **Figma link** back to
   each element. The queue clears once it's committed. (The Figma link needs `figma.fileKey`, which is only
   available to private/local plugins — hence `enablePrivatePluginApi` in the manifest.)
-- **Structure map** — every commit also writes `handoff/structure.md`, an indented tree of the whole file
-  (every page → frame → element, with name + type) so an AI or developer can understand the file's layout.
+- **Agent-ready output** — every commit also writes `handoff/changes.json` (machine-readable: per change,
+  the description, Jira link, and changed elements with `nodeId`/image), and the **PR/MR body** is an
+  instruction template telling an AI agent to fetch exact specs via the Figma MCP and implement against a PRD.
 - **Repo setup** — the first time, set a **repo URL** + **access token**. The URL is saved *with the Figma
   file* (so it's remembered per file); the token is stored *locally on your machine*. Change it anytime
   with the **Change** button.
