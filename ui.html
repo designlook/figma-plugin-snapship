@@ -26,6 +26,11 @@
   input, textarea { width:100%; padding:8px; border-radius:7px; border:1px solid var(--figma-color-border,#d0d0d0);
     background: var(--figma-color-bg,#fff); color: var(--figma-color-text,#1e1e1e); font-family: inherit; font-size:12px; }
   textarea { min-height:54px; resize:vertical; }
+  #desc { min-height:108px; }
+  .iconbtn { background:none; border:0; font-size:16px; line-height:1; cursor:pointer; color: var(--figma-color-text-secondary,#888); padding:2px 4px; }
+  .iconbtn:hover { color: var(--figma-color-text,#1e1e1e); }
+  .reuse { display:flex; align-items:center; gap:6px; font-size:11px; color: var(--figma-color-text-secondary,#777); margin-top:7px; }
+  .reuse input { width:auto; }
   .row { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   button.primary { background: var(--figma-color-bg-brand,#0d99ff); color:#fff; border:0; padding:8px 12px;
     border-radius:7px; cursor:pointer; font-weight:600; }
@@ -35,6 +40,10 @@
   button.wide { width:100%; padding:11px; margin-top:4px; }
   .err { color:#d33; font-size:11px; margin-top:6px; min-height:14px; }
   .micro2 { font-size:10px; color: var(--figma-color-text-secondary,#999); margin-top:6px; }
+  select { width:100%; padding:8px; border-radius:7px; border:1px solid var(--figma-color-border,#d0d0d0); background: var(--figma-color-bg,#fff); color: var(--figma-color-text,#1e1e1e); font-family:inherit; font-size:12px; }
+  .sep { border-top:1px solid var(--figma-color-border,#eee); margin:12px 0; }
+  .howto { font-size:11px; color: var(--figma-color-text-secondary,#777); background: var(--figma-color-bg-secondary,#f6f7f9); border:1px solid var(--figma-color-border,#eaeaea); border-radius:9px; padding:10px 12px; line-height:1.5; }
+  .howto ol { margin:6px 0 0; padding-left:18px; }
   .tokstate { font-size:10px; font-weight:400; color:#1ea97c; }
   .list-h { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color: var(--figma-color-text-secondary,#888);
     margin:4px 0 8px; }
@@ -59,38 +68,51 @@
 </head>
 <body>
   <div class="pad">
-    <div class="head"><span class="title">Snapship</span><span class="badge" id="modeBadge">design</span></div>
+    <div class="head"><span class="title">Snapship</span><button class="iconbtn" id="settingsBtn" title="Settings — repository & token">⚙</button></div>
 
-    <div class="ro hide" id="roNote">Dev Mode — read only. Switch to Design mode to log changes.</div>
-
-    <!-- repo bar -->
-    <div class="repobar">
-      <span class="rlabel" id="repoLabel">No repository set</span>
-      <button class="link" id="changeRepo">Set up</button>
-    </div>
-
-    <!-- repo setup -->
+    <!-- settings (full panel) -->
     <div id="setup" class="card hide">
-      <label class="fl" for="repoUrl">Repository URL (GitHub or GitLab)</label>
-      <input id="repoUrl" type="text" placeholder="https://github.com/owner/repo" />
-      <label class="fl" for="repoToken">Access token <span id="tokState" class="tokstate"></span></label>
-      <input id="repoToken" type="password" placeholder="GitHub classic PAT (repo) or GitLab PAT (api)" />
-      <div class="micro2">The repo URL is saved with this Figma file; the token is stored locally on your machine only.</div>
-      <div class="row">
-        <button class="primary" id="saveRepo">Save</button>
-        <button class="ghost" id="cancelSetup">Cancel</button>
-        <button class="ghost" id="clearTok">Clear token</button>
-      </div>
+      <label class="fl" for="repoSelect">Active repository</label>
+      <select id="repoSelect"></select>
+      <label class="fl" for="repoFolder">Default folder for this repo (optional)</label>
+      <input id="repoFolder" type="text" placeholder="e.g. Docs/Designs" />
+      <div class="micro2">Commits go to &lt;default folder&gt;/&lt;commit folder&gt;.</div>
+      <div class="row"><button class="ghost" id="removeRepo">Remove this repo</button></div>
+
+      <div class="sep"></div>
+
+      <label class="fl" for="repoUrl">Add a repository — URL</label>
+      <input id="repoUrl" type="text" placeholder="https://github.com/owner/repo or https://gitlab.com/group/repo" />
+      <label class="fl" for="repoToken">Access token</label>
+      <input id="repoToken" type="password" placeholder="GitHub classic PAT (repo) · GitLab PAT (api)" />
+      <label class="fl" for="repoAddFolder">Default folder (optional)</label>
+      <input id="repoAddFolder" type="text" placeholder="e.g. Docs/Designs" />
+      <div class="micro2">Token is stored locally (Figma clientStorage) — never in the file, never synced.</div>
+      <div class="row"><button class="primary" id="addRepoBtn">Add repository</button></div>
+
+      <div class="sep"></div>
+
+      <label class="reuse"><input type="checkbox" id="reuseId" checked /> Reuse folder for the next change</label>
+
+      <div class="row" style="margin-top:12px;"><button class="ghost" id="cancelSetup">Close</button></div>
     </div>
 
-    <!-- add a change -->
-    <div class="card">
+    <div id="main">
+      <div class="ro hide" id="roNote">Dev Mode — read only. Switch to Design mode to log changes.</div>
+
+      <div class="repobar">
+        <span class="rlabel" id="repoLabel">No repository set</span>
+      </div>
+
+      <!-- add a change -->
+      <div class="card">
       <div class="selbar" id="selbar">For: <b>(no selection)</b></div>
       <div class="selwarn hide" id="selwarn"></div>
-      <label class="fl" for="jira">Jira link (optional)</label>
-      <input id="jira" type="text" placeholder="https://yourteam.atlassian.net/browse/PROJ-123" />
       <label class="fl" for="desc">Description</label>
       <textarea id="desc" placeholder="What changed…"></textarea>
+      <label class="fl" for="folder">Commit folder (optional)</label>
+      <input id="folder" type="text" placeholder="e.g. NX-3829" />
+      <div class="micro2">Added under the repo's default folder.</div>
       <div class="row"><button class="primary" id="addChange">Add change</button></div>
       <div class="err" id="err"></div>
     </div>
@@ -102,6 +124,7 @@
     <input id="prTitle" type="text" placeholder="Design changes —…" />
     <button class="primary wide" id="commit">Commit Changes</button>
     <div class="sync" id="status"></div>
+    </div>
   </div>
 
   <script>
@@ -111,47 +134,58 @@
     function shortRepo(u) { return (u || "").replace(/^https?:\/\//, "").replace(/\/$/, ""); }
     function jiraShort(u) { var m = (u || "").match(/([A-Z][A-Z0-9]+-\d+)/); return m ? m[1] : u; }
 
-    document.getElementById("changeRepo").onclick = function () {
-      document.getElementById("setup").classList.remove("hide");
+    function openSettings() { document.getElementById("setup").classList.remove("hide"); document.getElementById("main").classList.add("hide"); }
+    function closeSettings() { document.getElementById("setup").classList.add("hide"); document.getElementById("main").classList.remove("hide"); }
+    document.getElementById("settingsBtn").onclick = function () {
+      if (document.getElementById("setup").classList.contains("hide")) openSettings(); else closeSettings();
     };
-    document.getElementById("cancelSetup").onclick = function () {
-      document.getElementById("setup").classList.add("hide");
-    };
-    document.getElementById("saveRepo").onclick = function () {
-      send({ type: "saveRepo", repo: document.getElementById("repoUrl").value.trim(), token: document.getElementById("repoToken").value.trim() });
+    document.getElementById("cancelSetup").onclick = closeSettings;
+    document.getElementById("addRepoBtn").onclick = function () {
+      var url = document.getElementById("repoUrl").value.trim();
+      if (!url) return;
+      send({ type: "addRepo", url: url, token: document.getElementById("repoToken").value.trim(), folder: document.getElementById("repoAddFolder").value.trim() });
+      document.getElementById("repoUrl").value = "";
       document.getElementById("repoToken").value = "";
-      document.getElementById("setup").classList.add("hide");
+      document.getElementById("repoAddFolder").value = "";
     };
-    document.getElementById("clearTok").onclick = function () { send({ type: "clearToken" }); };
+    document.getElementById("removeRepo").onclick = function () {
+      var url = document.getElementById("repoSelect").value;
+      if (url) send({ type: "removeRepo", url: url });
+    };
+    document.getElementById("repoSelect").onchange = function () { send({ type: "selectRepo", url: this.value }); };
+    document.getElementById("repoFolder").onchange = function () {
+      var url = document.getElementById("repoSelect").value;
+      if (url) send({ type: "addRepo", url: url, folder: this.value.trim() });
+    };
+    document.getElementById("reuseId").onchange = function () { send({ type: "setReuse", on: this.checked }); };
 
     document.getElementById("addChange").onclick = function () {
-      var jira = document.getElementById("jira").value.trim();
+      var folder = document.getElementById("folder").value.trim();
       var desc = document.getElementById("desc").value.trim();
-      if (!jira && !desc) { document.getElementById("err").textContent = "Add a description or a Jira link."; return; }
-      send({ type: "addChange", jira: jira, desc: desc });
-      document.getElementById("jira").value = "";
+      if (!desc) { document.getElementById("err").textContent = "Add a description."; return; }
+      send({ type: "addChange", folder: folder, desc: desc });
       document.getElementById("desc").value = "";
+      if (!document.getElementById("reuseId").checked) document.getElementById("folder").value = "";
       document.getElementById("err").textContent = "";
     };
 
     document.getElementById("commit").onclick = function () {
       var st = document.getElementById("status");
       st.className = "sync"; st.textContent = "Committing…";
-      send({ type: "commit", repo: document.getElementById("repoUrl").value.trim(), token: document.getElementById("repoToken").value.trim() });
+      send({ type: "commit", repo: document.getElementById("repoSelect").value, folder: document.getElementById("folder").value.trim() });
     };
 
     function renderChanges(changes) {
       var box = document.getElementById("list");
       box.innerHTML = "";
       document.getElementById("commit").disabled = !changes.length || !editable;
-      if (!changes.length) { box.innerHTML = '<div class="empty">No changes yet. Select an element, describe what changed, and Add change.</div>'; return; }
+      if (!changes.length) { box.innerHTML = '<div class="howto"><b>How it works</b><ol><li>Select a frame or element in Figma.</li><li>Write what changed in the description.</li><li>Click <b>Add change</b> (repeat per element).</li><li>Click <b>Commit Changes</b> — opens a PR/MR with screenshots + a manifest an AI can build from.</li></ol></div>'; return; }
       changes.forEach(function (c) {
         var row = document.createElement("div");
         row.className = "item";
         var head = c.element ? '<div class="cel">▸ ' + esc(c.element) + '</div>' : "";
         var d = c.desc ? '<div class="cd">' + esc(c.desc) + '</div>' : "";
-        var j = c.jira ? '<a class="cj" data-url="' + esc(c.jira) + '">' + esc(jiraShort(c.jira)) + '</a>' : '<span class="cj"></span>';
-        row.innerHTML = head + d + '<div class="crow">' + j + '<a class="del" data-id="' + c.id + '">delete</a></div>';
+        row.innerHTML = head + d + '<div class="crow"><span class="cj"></span><a class="del" data-id="' + c.id + '">delete</a></div>';
         box.appendChild(row);
       });
       box.querySelectorAll(".del").forEach(function (el) {
@@ -229,16 +263,19 @@
     async function runCommit(m) {
       var st = document.getElementById("status");
       try {
-        var files = [{ path: "handoff/changes.md", b64: b64(m.markdown) }];
-        if (m.json) files.push({ path: "handoff/changes.json", b64: b64(m.json) });
-        if (m.structure) files.push({ path: "handoff/structure.md", b64: b64(m.structure) });
-        (m.images || []).forEach(function (img) { files.push({ path: "handoff/img/" + img.name, b64: u8toB64(img.bytes) }); });
+        var base = m.base || "handoff";
+        var files = [{ path: base + "/changes.md", b64: b64(m.markdown) }];
+        if (m.json) files.push({ path: base + "/changes.json", b64: b64(m.json) });
+        if (m.structure) files.push({ path: base + "/structure.md", b64: b64(m.structure) });
+        (m.images || []).forEach(function (img) { files.push({ path: base + "/img/" + img.name, b64: u8toB64(img.bytes) }); });
         var title = (document.getElementById("prTitle").value.trim()) || ("Design changes —" + (m.fileName || "Figma"));
         var url = await commitRepo(m.repoUrl, m.token, files, title, m.prBody || "Generated by Snapship.");
         st.className = "sync ok";
         st.innerHTML = "✓ Committed: <a id='cl' href='#'>" + esc(url) + "</a>";
         document.getElementById("cl").onclick = function (e) { e.preventDefault(); send({ type: "openUrl", url: url }); };
         send({ type: "committed" });
+        document.getElementById("desc").value = "";
+        if (!document.getElementById("reuseId").checked) document.getElementById("folder").value = "";
       } catch (e) {
         st.className = "sync warn";
         st.textContent = "Failed: " + (e && e.message ? e.message : e);
@@ -250,16 +287,22 @@
       if (!msg) return;
       if (msg.type === "state") {
         editable = msg.editable;
-        document.getElementById("modeBadge").textContent = editable ? "design" : "dev mode";
         document.getElementById("roNote").classList.toggle("hide", editable);
-        document.getElementById("addChange").disabled = !editable;
+        document.getElementById("addChange").disabled = !editable || (msg.selectionCount || 0) === 0;
 
-        var repo = msg.repo || "";
-        document.getElementById("repoUrl").value = repo;
-        document.getElementById("repoLabel").textContent = repo ? shortRepo(repo) : "No repository set";
-        document.getElementById("changeRepo").textContent = repo ? "Change" : "Set up";
-        document.getElementById("tokState").textContent = msg.hasToken ? "✓ saved" : "(not set)";
-        if (!repo) document.getElementById("setup").classList.remove("hide");
+        var repos = msg.repos || [];
+        var rs = document.getElementById("repoSelect");
+        rs.innerHTML = "";
+        if (!repos.length) { var o0 = document.createElement("option"); o0.value = ""; o0.textContent = "No repositories — add one below"; rs.appendChild(o0); }
+        repos.forEach(function (r) { var o = document.createElement("option"); o.value = r.url; o.textContent = r.url.replace(/^https?:\/\//, ""); if (r.url === msg.selected) o.selected = true; rs.appendChild(o); });
+        var selRepo = repos.filter(function (r) { return r.url === msg.selected; })[0];
+        document.getElementById("repoFolder").value = selRepo ? (selRepo.folder || "") : "";
+        document.getElementById("repoLabel").textContent = msg.selected ? shortRepo(msg.selected) : "No repository — open Settings ⚙";
+        if (!repos.length) openSettings();
+
+        document.getElementById("reuseId").checked = msg.reuseId !== false;
+        var folderEl = document.getElementById("folder");
+        if (msg.reuseId !== false && !folderEl.value && msg.folder) folderEl.value = msg.folder;
 
         document.getElementById("selbar").innerHTML = "For: <b>" + (msg.selection ? esc(msg.selection) : "(no selection)") + "</b>";
 
