@@ -62,7 +62,7 @@ function pushState() {
       hasToken: !!t,
       editable: figma.editorType === "figma",
       selection: currentSelectionName(),
-      selectionDetails: nodeDetails(selectedNode())
+      fileName: figma.root.name
     });
   });
 }
@@ -76,21 +76,45 @@ function jiraLabel(url) {
 }
 
 function slug(s) { return (String(s || "element").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40)) || "element"; }
-function imgName(c) { return slug(c.element) + "-" + c.id + ".png"; }
+function changeNodes(c) { return (c.nodes && c.nodes.length) ? c.nodes : (c.nodeId ? [{ id: c.nodeId, name: c.element }] : []); }
+function changeKey(c) { var ids = changeNodes(c).map(function (n) { return n.id; }).sort().join(","); return ids || (c.element || ""); }
+function imgNameFor(n) { return slug(n.name) + "-" + String(n.id).replace(/[^a-z0-9]+/gi, "-") + ".png"; }
 
 function buildChangesMd(changes) {
   const lines = ["# Changes — " + figma.root.name, ""];
   changes.forEach(function (c) {
     lines.push("## " + (c.element || "Change"), "");
-    if (c.details) lines.push("`" + c.details + "`", "");
     if (c.desc) lines.push(c.desc, "");
     const links = [];
     if (c.jira) links.push("[" + jiraLabel(c.jira) + "](" + c.jira + ")");
     if (c.figmaLink) links.push("[Open in Figma](" + c.figmaLink + ")");
     if (links.length) lines.push(links.join(" · "), "");
-    if (c.nodeId) lines.push("![" + (c.element || "element") + "](img/" + imgName(c) + ")", "");
+    changeNodes(c).forEach(function (n) {
+      lines.push("![" + n.name + "](img/" + imgNameFor(n) + ")", "");
+    });
     lines.push("---", "");
   });
+  return lines.join("\n");
+}
+
+// Indented tree of the whole file (names + types) so an AI can understand the structure.
+function buildStructureMd() {
+  const lines = ["# Structure — " + figma.root.name, "", "```"];
+  let count = 0;
+  function walk(nodes, indent) {
+    for (const n of nodes) {
+      if (count++ > 8000) return;
+      lines.push(indent + n.name + " (" + n.type.toLowerCase().replace(/_/g, " ") + ")");
+      if ("children" in n && n.children && n.children.length) walk(n.children, indent + "  ");
+    }
+  }
+  const pages = figma.root.children;
+  for (let i = 0; i < pages.length; i++) {
+    if (count++ > 8000) break;
+    lines.push(pages[i].name + " (page)");
+    walk(pages[i].children, "  ");
+  }
+  lines.push("```", "");
   return lines.join("\n");
 }
 
@@ -101,18 +125,33 @@ figma.ui.onmessage = (msg) => {
       return;
     }
     const arr = getChanges();
-    const sn = selectedNode();
-    arr.push({
+    const sel = figma.currentPage.selection;
+    const nodes = sel.map(function (n) { return { id: n.id, name: n.name }; });
+    const nc = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       element: currentSelectionName(),
-      details: nodeDetails(sn),
-      nodeId: sn ? sn.id : "",
-      figmaLink: nodeUrl(sn),
+      nodes: nodes,
+      figmaLink: nodes.length ? nodeUrl(sel[0]) : "",
       jira: msg.jira || "",
       desc: msg.desc || "",
       ts: Date.now()
+    };
+    // de-dupe per element: any element in the new change is removed from earlier changes;
+    // an earlier change that loses all its elements is dropped.
+    const newIds = {};
+    nodes.forEach(function (n) { newIds[n.id] = true; });
+    const cleaned = [];
+    arr.forEach(function (c) {
+      const orig = changeNodes(c);
+      if (!orig.length) { cleaned.push(c); return; } // description-only change — keep
+      const kept = orig.filter(function (n) { return !newIds[n.id]; });
+      if (kept.length) {
+        const el = kept.length === 1 ? kept[0].name : kept.length + " elements";
+        cleaned.push(Object.assign({}, c, { nodes: kept, element: el }));
+      }
     });
-    setChanges(arr);
+    cleaned.push(nc);
+    setChanges(cleaned);
     pushState();
     return;
   }
@@ -145,16 +184,18 @@ figma.ui.onmessage = (msg) => {
       if (!token) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "Set an access token first." }); return; }
       const images = [];
       for (const c of changes) {
-        if (!c.nodeId) continue;
-        const node = figma.getNodeById(c.nodeId);
-        if (node && node.exportAsync) {
-          try {
-            const bytes = await node.exportAsync({ format: "PNG", constraint: { type: "SCALE", value: 2 } });
-            images.push({ name: imgName(c), bytes: Array.from(bytes) });
-          } catch (e) {}
+        const ns = changeNodes(c);
+        for (let idx = 0; idx < ns.length; idx++) {
+          const node = figma.getNodeById(ns[idx].id);
+          if (node && node.exportAsync) {
+            try {
+              const bytes = await node.exportAsync({ format: "PNG", constraint: { type: "SCALE", value: 2 } });
+              images.push({ name: imgNameFor(ns[idx]), bytes: Array.from(bytes) });
+            } catch (e) {}
+          }
         }
       }
-      figma.ui.postMessage({ type: "doCommit", repoUrl: repo, token: token, markdown: buildChangesMd(changes), fileName: figma.root.name, images: images });
+      figma.ui.postMessage({ type: "doCommit", repoUrl: repo, token: token, markdown: buildChangesMd(changes), structure: buildStructureMd(), fileName: figma.root.name, images: images });
     };
     if (msg.token) { figma.clientStorage.setAsync("relayToken", msg.token).then(function () { go(msg.token); }); }
     else { figma.clientStorage.getAsync("relayToken").then(go); }

@@ -95,6 +95,8 @@
     <div class="list-h">Changes</div>
     <div id="list"></div>
 
+    <label class="fl" for="prTitle">PR / MR title</label>
+    <input id="prTitle" type="text" placeholder="Relay changes — …" />
     <button class="primary wide" id="commit">Commit Changes</button>
     <div class="sync" id="status"></div>
   </div>
@@ -143,7 +145,7 @@
       changes.forEach(function (c) {
         var row = document.createElement("div");
         row.className = "item";
-        var head = c.element ? '<div class="cel">▸ ' + esc(c.element) + (c.details ? ' <span class="det">' + esc(c.details) + '</span>' : '') + '</div>' : "";
+        var head = c.element ? '<div class="cel">▸ ' + esc(c.element) + '</div>' : "";
         var d = c.desc ? '<div class="cd">' + esc(c.desc) + '</div>' : "";
         var j = c.jira ? '<a class="cj" data-url="' + esc(c.jira) + '">' + esc(jiraShort(c.jira)) + '</a>' : '<span class="cj"></span>';
         row.innerHTML = head + d + '<div class="crow">' + j + '<a class="del" data-id="' + c.id + '">delete</a></div>';
@@ -163,19 +165,19 @@
 
     function u8toB64(arr) { var s = ""; for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]); return btoa(s); }
 
-    async function commitRepo(repoUrl, token, files, fileName) {
+    async function commitRepo(repoUrl, token, files, title) {
       var u = repoUrl.replace(/\/+$/, "").replace(/\/(tree|blob)\/[^\/]+\/?$/, "");
-      if (u.indexOf("github.com") > -1) return githubCommit(u, token, files, fileName);
-      if (u.indexOf("gitlab.com") > -1) return gitlabCommit(u, token, files, fileName);
+      if (u.indexOf("github.com") > -1) return githubCommit(u, token, files, title);
+      if (u.indexOf("gitlab.com") > -1) return gitlabCommit(u, token, files, title);
       throw new Error("URL must be a github.com or gitlab.com repository.");
     }
 
-    async function githubCommit(url, token, files, fileName) {
+    async function githubCommit(url, token, files, title) {
       var mm = url.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?\/?$/);
       if (!mm) throw new Error("Couldn't parse owner/repo from the URL.");
       var api = "https://api.github.com/repos/" + mm[1] + "/" + mm[2];
       var H = { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
-      var title = "Relay changes — " + fileName, branch = "relay-changes-" + Date.now();
+      var branch = "relay-changes-" + Date.now();
       var r = await fetch(api, { headers: H }); if (!r.ok) await ghErr(r, "Repo read");
       var base = (await r.json()).default_branch;
       r = await fetch(api + "/git/ref/heads/" + base, { headers: H }); if (!r.ok) await ghErr(r, "Read base branch");
@@ -196,12 +198,12 @@
       return (await r.json()).html_url;
     }
 
-    async function gitlabCommit(url, token, files, fileName) {
+    async function gitlabCommit(url, token, files, title) {
       var mm = url.match(/gitlab\.com\/(.+?)(?:\.git)?\/?$/);
       if (!mm) throw new Error("Couldn't parse project path from the URL.");
       var api = "https://gitlab.com/api/v4/projects/" + encodeURIComponent(mm[1]);
       var H = { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
-      var title = "Relay changes — " + fileName, branch = "relay-changes-" + Date.now();
+      var branch = "relay-changes-" + Date.now();
       var r = await fetch(api, { headers: H }); if (!r.ok) throw new Error("Project read (" + r.status + ")");
       var target = (await r.json()).default_branch;
       var actions = [];
@@ -221,8 +223,10 @@
       var st = document.getElementById("status");
       try {
         var files = [{ path: "handoff/changes.md", b64: b64(m.markdown) }];
+        if (m.structure) files.push({ path: "handoff/structure.md", b64: b64(m.structure) });
         (m.images || []).forEach(function (img) { files.push({ path: "handoff/img/" + img.name, b64: u8toB64(img.bytes) }); });
-        var url = await commitRepo(m.repoUrl, m.token, files, m.fileName);
+        var title = (document.getElementById("prTitle").value.trim()) || ("Relay changes — " + (m.fileName || "Figma"));
+        var url = await commitRepo(m.repoUrl, m.token, files, title);
         st.className = "sync ok";
         st.innerHTML = "✓ Committed: <a id='cl' href='#'>" + esc(url) + "</a>";
         document.getElementById("cl").onclick = function (e) { e.preventDefault(); send({ type: "openUrl", url: url }); };
@@ -249,9 +253,10 @@
         document.getElementById("tokState").textContent = msg.hasToken ? "✓ saved" : "(not set)";
         if (!repo) document.getElementById("setup").classList.remove("hide");
 
-        var selTxt = msg.selection ? esc(msg.selection) : "(no selection)";
-        var selDet = msg.selectionDetails ? ' <span class="det">' + esc(msg.selectionDetails) + '</span>' : "";
-        document.getElementById("selbar").innerHTML = "For: <b>" + selTxt + "</b>" + selDet;
+        document.getElementById("selbar").innerHTML = "For: <b>" + (msg.selection ? esc(msg.selection) : "(no selection)") + "</b>";
+
+        var prt = document.getElementById("prTitle");
+        if (!prt.value) prt.value = "Relay changes — " + (msg.fileName || "Figma");
 
         renderChanges(msg.changes || []);
       }
