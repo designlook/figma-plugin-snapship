@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+    color: var(--figma-color-text, #1e1e1e);
+    background: var(--figma-color-bg, #fff);
+  }
+  .pad { padding: 12px 14px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; }
+  .title { font-weight: 700; font-size: 13px; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 999px;
+    background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text-secondary, #666); }
+  .sel { font-size: 11px; color: var(--figma-color-text-secondary, #666); margin-bottom: 10px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tabs { display:flex; gap:6px; margin-bottom: 8px; }
+  .tab { flex:1; padding:7px 0; text-align:center; border-radius:7px; cursor:pointer;
+    border:1px solid var(--figma-color-border, #e0e0e0); background:transparent;
+    color: var(--figma-color-text, #1e1e1e); font-size:11px; }
+  .tab.active { background: var(--figma-color-bg-brand, #0d99ff); color:#fff; border-color: transparent; }
+  textarea { width:100%; min-height:64px; resize:vertical; padding:8px; border-radius:7px;
+    border:1px solid var(--figma-color-border, #e0e0e0); background: var(--figma-color-bg, #fff);
+    color: var(--figma-color-text, #1e1e1e); font-family: inherit; font-size: 12px; }
+  .row { display:flex; gap:6px; margin-top:8px; }
+  button.primary { background: var(--figma-color-bg-brand, #0d99ff); color:#fff; border:0;
+    padding:8px 12px; border-radius:7px; cursor:pointer; font-weight:600; }
+  button.ghost { background:transparent; border:1px solid var(--figma-color-border,#e0e0e0);
+    color: var(--figma-color-text,#1e1e1e); padding:8px 12px; border-radius:7px; cursor:pointer; }
+  .list { margin-top: 12px; border-top:1px solid var(--figma-color-border,#eee); }
+  .item { padding:9px 0; border-bottom:1px solid var(--figma-color-border,#eee); }
+  .item .meta { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+  .kind { font-size:10px; text-transform:uppercase; letter-spacing:.4px; font-weight:700;
+    color: var(--figma-color-text-brand, #0d99ff); }
+  .status { font-size:10px; padding:1px 6px; border-radius:999px; cursor:pointer;
+    background: var(--figma-color-bg-secondary,#f0f0f0); color: var(--figma-color-text-secondary,#666); }
+  .status.ready { background: #1ea97c; color:#fff; }
+  .item .text { font-size:12px; line-height:1.45; white-space:pre-wrap; }
+  .item .actions { margin-top:4px; }
+  .item .actions a { font-size:10px; color: var(--figma-color-text-secondary,#888); cursor:pointer; text-decoration:underline; }
+  .empty { color: var(--figma-color-text-secondary,#888); font-size:11px; padding:14px 0; text-align:center; }
+  .footer { position: sticky; bottom:0; padding:10px 14px; border-top:1px solid var(--figma-color-border,#eee);
+    background: var(--figma-color-bg,#fff); display:flex; gap:6px; }
+  .md { width:100%; min-height:120px; margin-top:8px; font-family: ui-monospace, monospace; font-size:11px; }
+  .hide { display:none; }
+  .err { color:#d33; font-size:11px; margin-top:6px; min-height: 14px; }
+  .readonly-note { font-size:11px; color: var(--figma-color-text-secondary,#888);
+    background: var(--figma-color-bg-secondary,#f6f6f6); padding:8px; border-radius:7px; margin-bottom:8px; }
+</style>
+</head>
+<body>
+  <div class="pad">
+    <div class="head">
+      <span class="title">Relay</span>
+      <span class="badge" id="mode">design</span>
+    </div>
+    <div class="sel" id="sel">No selection</div>
+
+    <!-- AUTHORING (design mode) -->
+    <div id="author">
+      <div class="tabs">
+        <button class="tab active" data-kind="interaction">Interaction</button>
+        <button class="tab" data-kind="states">States</button>
+        <button class="tab" data-kind="accessibility">A11y</button>
+      </div>
+      <textarea id="text" placeholder="Describe the intent a developer can't see in the pixels…"></textarea>
+      <div class="row">
+        <button class="primary" id="addBtn">Add note</button>
+        <button class="ghost" id="exportBtn">Export Markdown</button>
+      </div>
+      <div class="err" id="err"></div>
+    </div>
+
+    <!-- READ ONLY (dev mode) -->
+    <div id="readonly" class="hide">
+      <div class="readonly-note">Dev Mode — read only. Select an element to see the designer's intent, then export.</div>
+      <button class="ghost" id="exportBtnDev">Export Markdown</button>
+    </div>
+
+    <div class="list" id="list"></div>
+
+    <textarea class="md hide" id="md" readonly></textarea>
+  </div>
+
+  <script>
+    var currentKind = "interaction";
+    var mode = "figma";
+
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.onclick = function () {
+        document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
+        t.classList.add("active");
+        currentKind = t.getAttribute("data-kind");
+      };
+    });
+
+    function send(msg) { parent.postMessage({ pluginMessage: msg }, "*"); }
+
+    document.getElementById("addBtn").onclick = function () {
+      var text = document.getElementById("text").value.trim();
+      if (!text) return;
+      send({ type: "add", kind: currentKind, text: text });
+      document.getElementById("text").value = "";
+    };
+    document.getElementById("exportBtn").onclick = function () { send({ type: "export" }); };
+    document.getElementById("exportBtnDev").onclick = function () { send({ type: "export" }); };
+
+    function render(annotations, editable) {
+      var list = document.getElementById("list");
+      list.innerHTML = "";
+      if (!annotations || !annotations.length) {
+        list.innerHTML = '<div class="empty">No intent notes on this element yet.</div>';
+        return;
+      }
+      annotations.forEach(function (a) {
+        var item = document.createElement("div");
+        item.className = "item";
+        var statusCls = a.status === "ready" ? "status ready" : "status";
+        item.innerHTML =
+          '<div class="meta"><span class="kind">' + a.kind + '</span>' +
+          '<span class="' + statusCls + '" data-id="' + a.id + '" data-act="toggle">' + a.status + '</span></div>' +
+          '<div class="text"></div>' +
+          (editable ? '<div class="actions"><a data-id="' + a.id + '" data-act="delete">delete</a></div>' : '');
+        item.querySelector(".text").textContent = a.text;
+        list.appendChild(item);
+      });
+      list.querySelectorAll("[data-act]").forEach(function (el) {
+        el.onclick = function () {
+          if (!editable) return;
+          send({ type: el.getAttribute("data-act"), id: el.getAttribute("data-id") });
+        };
+      });
+    }
+
+    onmessage = function (e) {
+      var msg = e.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === "state") {
+        mode = msg.mode;
+        var editable = mode === "figma";
+        document.getElementById("mode").textContent = editable ? "design" : "dev mode";
+        document.getElementById("author").classList.toggle("hide", !editable);
+        document.getElementById("readonly").classList.toggle("hide", editable);
+
+        var sel = document.getElementById("sel");
+        if (msg.multiple) sel.textContent = "Select a single element";
+        else if (msg.node) sel.textContent = "▸ " + msg.node.name;
+        else sel.textContent = "No selection";
+
+        render(msg.annotations, editable);
+        document.getElementById("md").classList.add("hide");
+        document.getElementById("err").textContent = "";
+      }
+
+      if (msg.type === "error") {
+        document.getElementById("err").textContent = msg.message;
+      }
+
+      if (msg.type === "markdown") {
+        var md = document.getElementById("md");
+        md.value = msg.markdown;
+        md.classList.remove("hide");
+        md.focus();
+        md.select();
+      }
+    };
+  </script>
+</body>
+</html>

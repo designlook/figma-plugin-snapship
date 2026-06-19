@@ -1,0 +1,10 @@
+{
+  "name": "relay-handoff-intent",
+  "version": "0.1.0",
+  "description": "Figma Dev Mode plugin that surfaces designer intent (interactions, states, accessibility) to developers.",
+  "private": true,
+  "scripts": {
+    "lint": "echo \"No build step — plain JS. Add tooling here when needed.\""
+  },
+  "license": "MIT"
+}
