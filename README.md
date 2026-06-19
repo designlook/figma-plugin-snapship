@@ -1,6 +1,6 @@
-# Relay — Figma change log → GitHub / GitLab
+# Snapship — Commit Design Changes to Repo (GitHub, GitLab)
 
-Relay turns the changes you make in a Figma file into a clean pull/merge request: a written
+Snapship turns the changes you make in a Figma file into a clean pull/merge request: a written
 change log, a JSON manifest, and a screenshot of every changed element — with deep links back to
 Figma. It's built so an **AI coding agent can read the MR and implement the feature** from a PRD.
 
@@ -14,7 +14,7 @@ Zero build step — plain JS, runs straight from `manifest.json`.
   **description**, and click **Add change**. The selected elements (name + node id) are captured
   automatically. Re-logging the same element replaces its earlier entry (de-duped per element).
 - **Changes list** — everything logged for this file, stored on the file itself.
-- **Edit the PR/MR title** — prefilled with `Relay changes — <file>`; change it to anything.
+- **Edit the PR/MR title** — prefilled with `Snapship changes — <file>`; change it to anything.
 - **Commit Changes** — pushes to GitHub or GitLab on a new branch and opens a **PR / MR** containing:
   - `handoff/changes.md` — human-readable log (description, Jira link, **Open in Figma** link, screenshot per element).
   - `handoff/changes.json` — machine-readable manifest (per change: description, jira, figmaLink, and each element's `name` / `nodeId` / `image`).
@@ -32,7 +32,7 @@ Zero build step — plain JS, runs straight from `manifest.json`.
 1. Open the **Figma desktop app** (plugin development requires it).
 2. **Plugins → Development → Import plugin from manifest…** → pick `manifest.json` in this folder.
    (Re-import only when `manifest.json` changes; for code edits just re-run.)
-3. Run **Relay**. First run: open repo setup, paste your repo URL + token, **Save**.
+3. Run **Snapship**. First run: open repo setup, paste your repo URL + token, **Save**.
 4. Select an element on the canvas → write a description (and/or Jira link) → **Add change**.
 5. Adjust the **PR / MR title** → **Commit Changes** → it opens a PR/MR and shows the link.
 6. After editing `code.js` / `ui.html`, just re-run the plugin (**Ctrl/Cmd + Alt + P**) — no re-import.
@@ -41,15 +41,15 @@ Zero build step — plain JS, runs straight from `manifest.json`.
 
 ## How to select (important)
 
-Relay attaches each change to **whatever you have selected**, so select the *thing you mean*:
+Snapship attaches each change to **whatever you have selected**, so select the *thing you mean*:
 
 - **Select the frame/component itself**, not its inner pieces. Click the element once to select the
   top-level frame; the screenshot and node link then represent the whole design, not a stray layer.
 - **Don't drag-select a region** or double-click deep into a frame — that grabs dozens of child layers.
-- If you select **more than 10 elements**, Relay shows a warning: that's almost always the *contents*
+- If you select **more than 10 elements**, Snapship shows a warning: that's almost always the *contents*
   of a frame rather than the frame. Press **Esc** and click the frame once, or pick the parent in the
   **Layers panel**, then re-add.
-- To attach a change to several distinct elements on purpose, multi-select them (Shift-click) — Relay
+- To attach a change to several distinct elements on purpose, multi-select them (Shift-click) — Snapship
   captures a screenshot of each.
 
 ---
@@ -65,7 +65,7 @@ Relay attaches each change to **whatever you have selected**, so select the *thi
 
 ## Best use — feed it to an AI agent
 
-Relay's output is designed to drive an automated build, not just document handoff:
+Snapship's output is designed to drive an automated build, not just document handoff:
 
 1. A designer logs changes in Figma and commits → a PR/MR appears with `changes.json` + screenshots +
    Figma links + the agent instruction body.
@@ -76,7 +76,7 @@ Relay's output is designed to drive an automated build, not just document handof
      and tokens (and Code Connect mappings if set up),
    - implements against your PRD's acceptance criteria.
 
-Why this split: Relay carries **intent + which nodes changed + stable links**; the Figma MCP supplies the
+Why this split: Snapship carries **intent + which nodes changed + stable links**; the Figma MCP supplies the
 **pixel-exact spec live at build time** (so it never goes stale). That combination is what lets an agent
 build a feature accurately instead of guessing from a screenshot.
 
@@ -95,7 +95,7 @@ build a feature accurately instead of guessing from a screenshot.
 ## Notes & caveats
 
 - The **Open in Figma** link needs `figma.fileKey`, which is only available to **private/local** plugins
-  (hence `enablePrivatePluginApi`). This means Relay can run locally and be published *privately to an
+  (hence `enablePrivatePluginApi`). This means Snapship can run locally and be published *privately to an
   org*, but **not to the public Community store** while it uses the file link. If `fileKey` is empty, the
   per-element `figmaLink` still carries the file key + node id.
 - Network calls go straight to the GitHub/GitLab APIs from the plugin sandbox; if a call is blocked the

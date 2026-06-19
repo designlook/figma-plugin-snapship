@@ -1,6 +1,6 @@
 {
-  "name": "Relay — Handoff Intent",
-  "id": "relay-handoff-intent-dev",
+  "name": "Snapship — Commit Design Changes to Repo (GitHub, GitLab)",
+  "id": "snapship-dev",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
