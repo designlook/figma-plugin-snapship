@@ -59,6 +59,7 @@
   .err { color:#d33; font-size:11px; margin-top:6px; min-height:0; }
   .err:empty { margin-top:0; }
   .micro2 { font-size:10px; color: var(--figma-color-text-secondary,#999); margin-top:6px; }
+  .micro2.underlabel { margin-top:0; margin-bottom:9px; }
   select { width:100%; padding:8px; border-radius:7px; border:1px solid var(--figma-color-border,#d0d0d0); background: var(--figma-color-bg,#fff); color: var(--figma-color-text,#1e1e1e); font-family:inherit; font-size:12px; }
   .sep { border-top:1px solid var(--figma-color-border,#eee); margin:12px 0; }
   .howto { font-size:11px; color: var(--figma-color-text-secondary,#777); background: var(--figma-color-bg-secondary,#f6f7f9); border:1px solid var(--figma-color-border,#eaeaea); border-radius:9px; padding:10px 12px; line-height:1.5; }
@@ -115,10 +116,10 @@
           <label class="fl" for="repoUrl">URL</label>
           <input id="repoUrl" type="text" placeholder="https://github.com/owner/repo or https://gitlab.com/group/repo" />
           <label class="fl" for="repoToken">Access token</label>
+          <div class="micro2 underlabel">Stays on your computer (Figma's local storage) — never saved in the Figma file or synced to anyone.</div>
           <input id="repoToken" type="password" placeholder="GitHub PAT (repo) · GitLab PAT (api)" />
           <label class="fl" for="repoAddFolder">Default folder (optional)</label>
           <input id="repoAddFolder" type="text" placeholder="e.g. Docs/Designs" />
-          <div class="micro2">Token is stored locally (Figma clientStorage) — never in the file, never synced.</div>
           <div class="row"><button class="primary" id="addRepoBtn">Add</button></div>
         </div>
 
