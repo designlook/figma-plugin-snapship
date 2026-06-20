@@ -7,6 +7,8 @@ and implement the feature** from a PRD.
 
 Zero build step — plain JS, runs straight from `manifest.json`.
 
+**[Install on Figma Community →](https://www.figma.com/community/plugin/1649742475700979863)**
+
 ---
 
 ## What it does
@@ -104,10 +106,10 @@ the **pixel-exact spec live at build time**, so it never goes stale.
   `fetch` calls. They talk over `postMessage` (`figma.ui.postMessage` ↔ `onmessage`).
 
 **Storage:**
-- **Per file** — `figma.root.setSharedPluginData("relay", …)`: selected `repoUrl`, `changes`, `folder`
+- **Per file** — `figma.root.setSharedPluginData("snapship", …)`: selected `repoUrl`, `changes`, `folder`
   (last commit folder), `reuseId`. Travels with the Figma file.
 - **Per user, local** — `figma.clientStorage`: `repos` (array of `{ url, token, folder }`) and `lastRepo`.
-  Tokens never leave your machine. *(Internal keys are still namespaced `relay` from the original name.)*
+  Tokens never leave your machine.
 
 **Commit pipeline (UI iframe):**
 1. `code.js` exports each changed node via `node.exportAsync({ format: "PNG" })` — capped to 1440px
