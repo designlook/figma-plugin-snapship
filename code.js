@@ -1,7 +1,7 @@
 // Snapship — log design changes on a Figma file and commit them to GitHub / GitLab.
 // Changes + repo URL are stored on the file; the access token is stored locally per user.
 
-const NS = "relay";
+const NS = "snapship";
 
 figma.showUI(__html__, { width: 380, height: 600, themeColors: true });
 

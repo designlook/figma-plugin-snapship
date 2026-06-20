@@ -1,7 +1,7 @@
 {
-  "name": "relay-handoff-intent",
+  "name": "snapship",
   "version": "0.1.0",
-  "description": "Figma Dev Mode plugin that surfaces designer intent (interactions, states, accessibility) to developers.",
+  "description": "Figma plugin that commits design changes to GitHub/GitLab as a pull/merge request with screenshots and AI-readable specs.",
   "private": true,
   "scripts": {
     "lint": "echo \"No build step — plain JS. Add tooling here when needed.\""

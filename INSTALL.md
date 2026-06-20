@@ -1,4 +1,4 @@
-# Installing Relay
+# Installing Snapship
 
 ## 1. Local install (development)
 
@@ -6,13 +6,10 @@ Requires the **Figma desktop app** — the browser version can't load a local ma
 
 1. Open the Figma desktop app.
 2. Top-left menu → **Plugins → Development → Import plugin from manifest…**
-3. Select `manifest.json` in this folder
-   (`C:\Users\scott\Documents\Claude\Projects\Business Ideas 2026\relay-figma-plugin\manifest.json`).
-4. Open any design file, **select one element**, then
-   **menu → Plugins → Development → Relay — Handoff Intent**
-   (or right-click the canvas → Plugins → Development → Relay).
-5. Test the developer side: toggle **Dev Mode** (the `</>` switch top-right, or **Shift + D**),
-   then run Relay again — it shows the notes read-only with an export option.
+3. Select `manifest.json` in this folder.
+4. Open any design file, **select one or more elements**, then
+   **menu → Plugins → Development → Snapship**
+   (or right-click the canvas → Plugins → Development → Snapship).
 
 **Reloading after code edits:** just re-run the plugin — quickest is **Ctrl + Alt + P**
 (rerun last plugin). No reinstall needed; the plugin points at these local files.
@@ -25,18 +22,18 @@ local files, so each time you run it, the latest `code.js` and `ui.html` are loa
 To pick up changes:
 1. If the plugin panel is open, close it (✕).
 2. Re-run it — **Ctrl + Alt + P** (rerun last plugin), or right-click canvas →
-   **Plugins → Development → Relay — Handoff Intent**.
+   **Plugins → Development → Snapship**.
 
 That's it. Editing `code.js` or `ui.html` only requires a re-run.
 
 **Exception — manifest changes:** if you edit `manifest.json` (name, id, fields), re-import it:
-**Plugins → Development → Manage plugins in development → remove Relay**, then
+**Plugins → Development → Manage plugins in development → remove Snapship**, then
 **Import plugin from manifest…** again. Code/UI edits never need this.
 
 ## 2. Publishing to the Figma Community ("marketplace")
 
 1. Desktop app → **menu → Plugins → Development → Manage plugins in development**,
-   find Relay → **Publish** (or right-click the plugin → Publish).
+   find Snapship → **Publish** (or right-click the plugin → Publish).
 2. Complete the listing:
    - Name + one-line tagline
    - Description (treat like SEO — exact-match title, keyword-rich body)
@@ -50,6 +47,11 @@ That's it. Editing `code.js` or `ui.html` only requires a re-run.
 
 ## 3. How end users install it once published
 
-Figma → **Resources panel / Plugins search** → search "Relay" → **Run** (or **Save** to keep it).
+Figma → **Resources panel / Plugins search** → search "Snapship" → **Run** (or **Save** to keep it).
 From the Community page it's a one-click "Open in Figma / Save." No manifest or desktop-only
 requirement for them.
+
+## 4. GitHub repository
+
+Source: https://github.com/designlook/snapship
+Issues: https://github.com/designlook/snapship/issues

@@ -1,8 +1,6 @@
-# Relay — Figma Community Publishing Kit
+# Snapship — Figma Community Publishing Kit
 
-Everything to paste into the **Plugins → Development → Publish** form. Copy is written to match
-what the plugin actually does today (don't overclaim — it drives bad reviews). Roadmap items are
-clearly marked "coming soon."
+Everything to paste into the **Plugins → Development → Publish** form.
 
 ---
 
@@ -22,59 +20,58 @@ clearly marked "coming soon."
 
 ### Name
 ```
-Relay — Handoff Intent
+Snapship — Commit Design Changes to Repo (GitHub, GitLab)
 ```
 
-### Tagline (one line, ~shown under the name)
+### Tagline
 ```
-Capture interaction, state & accessibility intent — and hand it to developers as a spec.
-```
-
-### Short description (first line of the listing)
-```
-Designers attach the intent pixels can't show — interactions, states, accessibility — and Relay turns it into a clean handoff spec developers can read and export.
+Select elements, describe the change, commit — Snapship opens a PR/MR with screenshots and an AI-ready spec.
 ```
 
-### Full description (paste into the description box)
+### Short description
 ```
-Handoff breaks because intent never reaches the developer. Measurements and colors are easy — what's missing is the behavior: what happens on tap, which states exist, what the empty and error cases are, and the accessibility semantics. That intent lives in the designer's head, not the pixels.
+Snapship turns Figma changes into a clean pull/merge request: a written log, a machine-readable manifest, a file structure map, and a screenshot of every changed element — with deep links back to Figma.
+```
 
-Relay fixes that. Instead of a blank notes box, it gives you structured templates for the things developers actually need, then turns them into a spec they can read and paste into their workflow.
+### Full description
+```
+Handoff breaks when design changes aren't communicated clearly. Snapship fixes that by turning the changes you make in a Figma file into a structured PR/MR an AI coding agent can read and implement.
 
 WHAT IT DOES
-• Attach typed intent to any element — Interaction, States & logic, Accessibility.
-• Structured templates prompt for the specifics (trigger, behavior, motion, states, role, label, keyboard) so nothing gets forgotten.
-• Mark each note Draft or Ready as the design firms up.
-• Read-only developer view to review intent without changing the design.
-• Export a clean Markdown handoff spec — grouped by element, with copy-paste accessibility attributes (role / aria-label).
+• Log a change — select elements, write a description, optionally set a commit folder, click Add change. Re-logging an element replaces its earlier entry (de-duped per element).
+• Manage repositories — add multiple GitHub/GitLab repos, each with its own token and default folder. Switch the active repo from settings.
+• Commit Changes — pushes to a new branch and opens a PR/MR automatically.
+
+WHAT GETS COMMITTED
+Each commit lands on a new branch (snapship-changes-<timestamp>) and opens a PR/MR with:
+• changes.md — human-readable log with Open in Figma links and screenshots
+• changes.json — machine-readable manifest (description, figmaLink, element name/nodeId/image)
+• structure.md — indented tree of the whole file (page → frame → element)
+• img/<element>.png — screenshot of each changed element
+• PR/MR body — instruction template for an AI agent to implement the changes
 
 WHO IT'S FOR
-Product teams where designers and front-end developers hand off regularly — especially anyone who's tired of implementations drifting from the design because the intent got lost.
+Product teams and solo designers who want design changes to flow directly into a developer workflow or AI coding agent — with zero manual export steps.
 
 WHY IT'S DIFFERENT
-Freeform comments and annotations let you write anything (and forget everything). Relay is opinionated: it captures a complete, structured handoff and lets you take it out of Figma as a spec — including ready-to-paste ARIA.
+Most handoff tools describe the final design state. Snapship captures what changed and why, packages it for an AI agent, and opens the PR in one click.
 
-Free to use. No account, no backend — notes are stored on the file itself.
-
-COMING SOON
-More intent types (responsive, motion, content rules, edge cases), and export to Jira / Linear / Storybook.
-
-Feedback welcome — it directly shapes what ships next.
+Zero build step — plain JS, runs straight from manifest.json.
+Free to use. No account, no backend beyond your own repo token.
 ```
 
-### Tags (add up to ~12)
+### Tags
 ```
-handoff, developer handoff, dev mode, annotations, accessibility, a11y, specs, documentation, design systems, engineering, qa, intent
+handoff, developer handoff, pull request, github, gitlab, commit, AI agent, design-to-code, changelog, screenshots, documentation, engineering
 ```
 
 ### Support contact
-Use a real inbox you'll check. Options:
-- Email: `scott.yu@gmail.com` (or set up a dedicated `support@…` later)
-- Or a GitHub issues URL: `https://github.com/designlook/relay-figma-plugin/issues`
+- Email: `scott.yu@gmail.com`
+- GitHub issues: `https://github.com/designlook/snapship/issues`
+- Figma Community: `https://www.figma.com/community/plugin/1649742475700979863`
 
 ### Permissions / network access
-Already set in `manifest.json`: **no network access** (`allowedDomains: ["none"]`). Say so if asked —
-it's a trust signal: the plugin sends nothing anywhere.
+Set in `manifest.json`: **network access to GitHub and GitLab APIs only** (no data sent elsewhere).
 
 ---
 
@@ -82,13 +79,11 @@ it's a trust signal: the plugin sends nothing anywhere.
 
 Capture at 16:9 (e.g. 1920×960). Frame the plugin panel over a real-looking design file.
 
-1. **Authoring** — the Interaction template filled in on a selected component. Caption: "Capture the intent pixels can't show."
-2. **A note card** — an element with Interaction + Accessibility notes, one marked Ready. Caption: "Typed, structured — not a blank box."
-3. **Developer view** — the read-only dev preview of the same element. Caption: "Developers read the intent, no guesswork."
-4. **Markdown export** — the exported spec with the `role`/`aria-label` code block visible. Caption: "Export a dev-ready spec, ARIA included."
-5. (Optional) **The three tabs** — Interaction / States / A11y. Caption: "Interaction, states, and accessibility."
-
-Tip: the cover image (`assets/cover-1920x960.png`) already illustrates the design→Dev Mode flow and can double as screenshot #1 or the hero.
+1. **Add change** — select a component, fill in the description, click Add change. Caption: "Log what changed and why."
+2. **Change list** — two or three changes queued up. Caption: "Build a commit queue before pushing."
+3. **Settings panel** — repo URL + token configured, folder set. Caption: "Works with GitHub and GitLab."
+4. **PR/MR opened** — show the resulting GitHub PR body with the AI instruction template. Caption: "One click opens a PR an AI agent can implement."
+5. (Optional) **structure.md in GitHub** — the file tree output. Caption: "AI gets the full file map."
 
 ---
 
@@ -100,9 +95,8 @@ Tip: the cover image (`assets/cover-1920x960.png`) already illustrates the desig
 - [ ] Tags added
 - [ ] Support contact set
 - [ ] Test the plugin once more from a clean run (Ctrl+Alt+P)
-- [ ] Optional: attach a small **playground file** (a sample frame with a couple of notes already added) so reviewers/users can try it instantly
 
-Then **Submit for review**. Approval typically takes a few days. Updates are bumped and re-reviewed.
+Then **Submit for review**. Approval typically takes a few days.
 
 ## Going paid later
 To charge for a Pro tier: get approved to sell on Community, connect **Stripe**, and set a price
