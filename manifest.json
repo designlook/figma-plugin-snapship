@@ -7,6 +7,7 @@
   "editorType": ["figma", "dev"],
   "documentAccess": "dynamic-page",
   "enablePrivatePluginApi": true,
+  "capabilities": ["inspect"],
   "networkAccess": {
     "allowedDomains": ["https://api.github.com", "https://gitlab.com"],
     "reasoning": "Create a pull/merge request containing the exported handoff spec on the user's GitHub or GitLab repository."
