@@ -126,6 +126,9 @@
         <div class="sep"></div>
         <label class="reuse"><input type="checkbox" id="clearFolder" /> Clear folder after each commit</label>
         <label class="reuse"><input type="checkbox" id="skipStructure" /> Skip structure map (faster commits)</label>
+        <div class="setlabel" style="margin-top:12px;">Markdown</div>
+        <label class="reuse"><input type="radio" name="mdMode" value="single" checked /> Single file (changes.md)</label>
+        <label class="reuse"><input type="radio" name="mdMode" value="perImage" /> One .md per screenshot (same name as the PNG)</label>
         <div class="row" style="margin-top:12px;"><button class="ghost" id="cancelSetup">Close</button></div>
       </div>
 
@@ -260,6 +263,9 @@
     document.getElementById("cancelEdit").onclick = exitEdit;
     document.getElementById("clearFolder").onchange = function () { send({ type: "setClearFolder", on: this.checked }); };
     document.getElementById("skipStructure").onchange = function () { send({ type: "setSkipStructure", on: this.checked }); };
+    document.querySelectorAll("input[name=mdMode]").forEach(function (el) {
+      el.onchange = function () { if (this.checked) send({ type: "setMdMode", mode: this.value }); };
+    });
 
     document.getElementById("addChange").onclick = function () {
       var folder = document.getElementById("folder").value.trim();
@@ -394,7 +400,10 @@
       var st = document.getElementById("status");
       try {
         var base = m.base || "handoff";
-        var files = [{ path: base + "/changes.md", b64: b64(m.markdown) }];
+        var files = [];
+        (m.mdFiles && m.mdFiles.length ? m.mdFiles : (m.markdown ? [{ name: "changes.md", markdown: m.markdown }] : [])).forEach(function (f) {
+          files.push({ path: base + "/" + f.name, b64: b64(f.markdown) });
+        });
         if (m.json) files.push({ path: base + "/changes.json", b64: b64(m.json) });
         if (m.structure) files.push({ path: base + "/structure.md", b64: b64(m.structure) });
         (m.images || []).forEach(function (img) { files.push({ path: base + "/img/" + img.name, b64: u8toB64(img.bytes) }); });
@@ -450,7 +459,10 @@
       var st = document.getElementById("status");
       try {
         var base = m.base || "handoff";
-        var entries = [{ name: base + "/changes.md", data: strBytes(m.markdown) }];
+        var entries = [];
+        (m.mdFiles && m.mdFiles.length ? m.mdFiles : (m.markdown ? [{ name: "changes.md", markdown: m.markdown }] : [])).forEach(function (f) {
+          entries.push({ name: base + "/" + f.name, data: strBytes(f.markdown) });
+        });
         if (m.json) entries.push({ name: base + "/changes.json", data: strBytes(m.json) });
         if (m.structure) entries.push({ name: base + "/structure.md", data: strBytes(m.structure) });
         (m.images || []).forEach(function (img) { entries.push({ name: base + "/img/" + img.name, data: new Uint8Array(img.bytes) }); });
@@ -504,6 +516,8 @@
 
         document.getElementById("clearFolder").checked = !!msg.clearFolder;
         document.getElementById("skipStructure").checked = !!msg.skipStructure;
+        var mdMode = msg.mdMode === "perImage" ? "perImage" : "single";
+        document.querySelectorAll("input[name=mdMode]").forEach(function (el) { el.checked = el.value === mdMode; });
         var folderEl = document.getElementById("folder");
         if (!folderEl.value && msg.folder) folderEl.value = msg.folder;
 

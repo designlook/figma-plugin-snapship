@@ -73,7 +73,8 @@ function pushState() {
       fileName: figma.root.name,
       folder: getDoc("folder", ""),
       clearFolder: getDoc("clearFolder", "0") === "1",
-      skipStructure: getDoc("skipStructure", "0") === "1"
+      skipStructure: getDoc("skipStructure", "0") === "1",
+      mdMode: getDoc("mdMode", "single")
     });
   });
 }
@@ -90,10 +91,19 @@ function slug(s) { return (String(s || "element").toLowerCase().replace(/[^a-z0-
 function changeNodes(c) { return (c.nodes && c.nodes.length) ? c.nodes : (c.nodeId ? [{ id: c.nodeId, name: c.element }] : []); }
 function changeKey(c) { var ids = changeNodes(c).map(function (n) { return n.id; }).sort().join(","); return ids || (c.element || ""); }
 function imgNameFor(n) { return slug(n.name) + "-" + String(n.id).replace(/[^a-z0-9]+/gi, "-") + ".png"; }
+function mdNameFor(n) { return imgNameFor(n).replace(/\.png$/i, ".md"); }
 function sanitizeFolder(s) {
   var f = String(s || "").trim().replace(/\\/g, "/").replace(/[^A-Za-z0-9._/-]/g, "-").replace(/\/+/g, "/").replace(/^\/+|\/+$/g, "");
   f = f.split("/").filter(function (p) { return p && p !== ".."; }).join("/");
   return f || "handoff";
+}
+
+function changeMdBody(c, n, imgRel) {
+  const lines = ["# " + ((n && n.name) || c.element || "Change"), ""];
+  if (c.desc) lines.push(c.desc, "");
+  if (c.figmaLink) lines.push("[Open in Figma](" + c.figmaLink + ")", "");
+  if (n && imgRel) lines.push("![" + n.name + "](" + imgRel + ")", "");
+  return lines.join("\n");
 }
 
 function buildChangesMd(changes) {
@@ -110,6 +120,24 @@ function buildChangesMd(changes) {
     lines.push("---", "");
   });
   return lines.join("\n");
+}
+
+function buildMdFiles(changes) {
+  if (getDoc("mdMode", "single") !== "perImage") {
+    return [{ name: "changes.md", markdown: buildChangesMd(changes) }];
+  }
+  const files = [];
+  changes.forEach(function (c) {
+    const ns = changeNodes(c);
+    if (!ns.length) {
+      files.push({ name: slug(c.element || "change") + ".md", markdown: changeMdBody(c, null, "") });
+      return;
+    }
+    ns.forEach(function (n) {
+      files.push({ name: "img/" + mdNameFor(n), markdown: changeMdBody(c, n, imgNameFor(n)) });
+    });
+  });
+  return files;
 }
 
 // Indented tree of the whole file (names + types) so an AI can understand the structure.
@@ -279,6 +307,12 @@ figma.ui.onmessage = (msg) => {
     return;
   }
 
+  if (msg.type === "setMdMode") {
+    setDoc("mdMode", msg.mode === "perImage" ? "perImage" : "single");
+    pushState();
+    return;
+  }
+
   if (msg.type === "commit") {
     const url = (msg.repo || getDoc("repoUrl", "")).trim();
     const changes = getChanges();
@@ -295,16 +329,17 @@ figma.ui.onmessage = (msg) => {
       }
       const images = await exportImages(changes);
 
+      const mdFiles = buildMdFiles(changes);
       if (url === "__zip__" || !url) {
         const base = sanitizeFolder(commitFolder);
-        figma.ui.postMessage({ type: "doZip", markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), fileName: figma.root.name, base: base, images: images });
+        figma.ui.postMessage({ type: "doZip", mdFiles: mdFiles, structure: structure, json: buildChangesJson(changes), fileName: figma.root.name, base: base, images: images });
         return;
       }
       const repos = await getReposAsync();
       const entry = repos.filter(function (r) { return r.url === url; })[0];
       if (!entry || !entry.token) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "That repository has no token — add it in Settings." }); return; }
       const base = sanitizeFolder([entry.folder || "", commitFolder].filter(Boolean).join("/"));
-      figma.ui.postMessage({ type: "doCommit", repoUrl: url, token: entry.token, markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), prBody: buildPrBody(base), fileName: figma.root.name, base: base, images: images });
+      figma.ui.postMessage({ type: "doCommit", repoUrl: url, token: entry.token, mdFiles: mdFiles, structure: structure, json: buildChangesJson(changes), prBody: buildPrBody(base), fileName: figma.root.name, base: base, images: images });
     })();
     return;
   }
