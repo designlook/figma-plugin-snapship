@@ -60,14 +60,14 @@ function getReposAsync() {
 function pushState() {
   Promise.all([getReposAsync(), figma.clientStorage.getAsync("lastRepo")]).then(function (res) {
     var repos = res[0], last = res[1] || "";
-    var selected = getDoc("repoUrl", "") || last || (repos[0] && repos[0].url) || "";
+    var selected = getDoc("repoUrl", "") || last || (repos[0] && repos[0].url) || "__zip__";
     figma.ui.postMessage({
       type: "state",
       changes: getChanges(),
       repos: repos.map(function (r) { return { url: r.url, folder: r.folder || "", hasToken: !!r.token }; }),
       selected: selected,
       hasToken: repos.some(function (r) { return r.url === selected && r.token; }),
-      editable: figma.editorType === "figma",
+      editable: true,
       selection: currentSelectionName(),
       selectionCount: figma.currentPage.selection.length,
       fileName: figma.root.name,
@@ -193,10 +193,6 @@ async function exportImages(changes) {
 
 figma.ui.onmessage = (msg) => {
   if (msg.type === "addChange") {
-    if (figma.editorType !== "figma") {
-      figma.ui.postMessage({ type: "err", message: "Switch to Design mode to add changes." });
-      return;
-    }
     const arr = getChanges();
     const sel = figma.currentPage.selection;
     const nodes = sel.map(function (n) { return { id: n.id, name: n.name }; });
@@ -299,12 +295,11 @@ figma.ui.onmessage = (msg) => {
       }
       const images = await exportImages(changes);
 
-      if (url === "__zip__") {
+      if (url === "__zip__" || !url) {
         const base = sanitizeFolder(commitFolder);
         figma.ui.postMessage({ type: "doZip", markdown: buildChangesMd(changes), structure: structure, json: buildChangesJson(changes), fileName: figma.root.name, base: base, images: images });
         return;
       }
-      if (!url) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "Add a repository in Settings first." }); return; }
       const repos = await getReposAsync();
       const entry = repos.filter(function (r) { return r.url === url; })[0];
       if (!entry || !entry.token) { figma.ui.postMessage({ type: "commitDone", ok: false, message: "That repository has no token — add it in Settings." }); return; }

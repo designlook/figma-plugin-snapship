@@ -170,7 +170,7 @@
           <li>Select a frame or element in Figma.</li>
           <li>Write what changed in the description.</li>
           <li>Click <b>Add change</b> (repeat per element).</li>
-          <li>Click <b>Commit Changes</b> — opens a PR/MR with screenshots + a manifest an AI can build from.</li>
+          <li>Click <b>Download ZIP</b> — or add a GitHub/GitLab repo in Settings to open a PR.</li>
         </ol>
       </div>
 
@@ -501,7 +501,6 @@
         document.getElementById("commit").textContent = (msg.selected === "__zip__")
           ? (nChanges ? ("Download " + nChanges + " Change" + (nChanges === 1 ? "" : "s") + " (ZIP)") : "Download ZIP")
           : (nChanges ? ("Commit " + nChanges + " Change" + (nChanges === 1 ? "" : "s")) : "Commit Changes");
-        if (!repos.length) openSettings();
 
         document.getElementById("clearFolder").checked = !!msg.clearFolder;
         document.getElementById("skipStructure").checked = !!msg.skipStructure;
